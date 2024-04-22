@@ -13,6 +13,7 @@
     <groupId>org.geo-atlas.library</groupId>
     <artifactId>mse</artifactId>
     <packaging>pom</packaging>
+
     <modules>
         <module>pyramid</module>
     </modules>

@@ -13,9 +13,12 @@
     <artifactId>library</artifactId>
     <packaging>pom</packaging>
     <modules>
-        <module>tile</module>
-        <module>io</module>
+        <module>base</module>
         <module>common</module>
+        <module>io</module>
+        <module>mse</module>
+        <module>tile</module>
+        <module>metadata</module>
     </modules>
 
     <properties>

@@ -12,10 +12,6 @@
 
     <groupId>org.geo-atlas.library</groupId>
     <artifactId>tile</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>map-tile</module>
-    </modules>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
