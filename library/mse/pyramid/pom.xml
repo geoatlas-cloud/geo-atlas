@@ -35,8 +35,14 @@
         </dependency>
         <dependency>
             <groupId>org.geotools</groupId>
+            <artifactId>gt-render</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.geotools</groupId>
             <artifactId>gt-epsg-hsql</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.locationtech.jts</groupId>
             <artifactId>jts-core</artifactId>
@@ -45,6 +51,18 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.geo-atlas.library</groupId>
+            <artifactId>base</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.geo-atlas.library</groupId>
+            <artifactId>metadata</artifactId>
+            <version>${revision}</version>
         </dependency>
 
         <dependency>

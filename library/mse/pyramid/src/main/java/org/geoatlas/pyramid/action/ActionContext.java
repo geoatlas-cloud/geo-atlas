@@ -1,9 +1,14 @@
 package org.geoatlas.pyramid.action;
 
+import org.geoatlas.pyramid.index.TileMatrixSet;
 import org.geoatlas.tile.TileRequest;
 import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.feature.DefaultFeatureCollection;
+import org.geotools.geometry.jts.ReferencedEnvelope;
+import org.geotools.util.factory.Hints;
+import org.opengis.feature.type.GeometryDescriptor;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -12,46 +17,96 @@ import org.geotools.feature.DefaultFeatureCollection;
  **/
 public class ActionContext {
 
-    private final TileRequest request;
+    private TileRequest request;
 
-    private final SimpleFeatureSource featureSource;
+    private ReferencedEnvelope tiledBbox;
+    private ReferencedEnvelope tiledExpandedBbox;
 
-    /**
-     * 用于Simplify阶段简化, 减少内存使用
-     */
-    private SimpleFeatureIterator simplifyReader;
+    private ReferencedEnvelope dataBbox;
 
-    /**
-     * 后续阶段共享使用
-     */
-    private DefaultFeatureCollection content;
+    private CoordinateReferenceSystem sourceCrs;
+    private TileMatrixSet tileMatrixSet;
 
-    public ActionContext(TileRequest request, SimpleFeatureSource featureSource) {
+    private int buffer_factor;
+
+    private Hints hints;
+
+    private GeometryDescriptor geometryDescriptor;
+
+    public ActionContext(TileRequest request, int buffer_factor) {
         this.request = request;
-        this.featureSource = featureSource;
+        this.buffer_factor = buffer_factor;
     }
 
     public TileRequest getRequest() {
         return request;
     }
 
-    public SimpleFeatureSource getFeatureSource() {
-        return featureSource;
+    public void setRequest(TileRequest request) {
+        this.request = request;
     }
 
-    public SimpleFeatureIterator getSimplifyReader() {
-        return simplifyReader;
+    public ReferencedEnvelope getTiledBbox() {
+        return tiledBbox;
     }
 
-    public void setSimplifyReader(SimpleFeatureIterator simplifyReader) {
-        this.simplifyReader = simplifyReader;
+    public void setTiledBbox(ReferencedEnvelope tiledBbox) {
+        this.tiledBbox = tiledBbox;
     }
 
-    public DefaultFeatureCollection getContent() {
-        return content;
+    public ReferencedEnvelope getTiledExpandedBbox() {
+        return tiledExpandedBbox;
     }
 
-    public void setContent(DefaultFeatureCollection content) {
-        this.content = content;
+    public void setTiledExpandedBbox(ReferencedEnvelope tiledExpandedBbox) {
+        this.tiledExpandedBbox = tiledExpandedBbox;
+    }
+
+    public ReferencedEnvelope getDataBbox() {
+        return dataBbox;
+    }
+
+    public void setDataBbox(ReferencedEnvelope dataBbox) {
+        this.dataBbox = dataBbox;
+    }
+
+    public CoordinateReferenceSystem getSourceCrs() {
+        return sourceCrs;
+    }
+
+    public void setSourceCrs(CoordinateReferenceSystem sourceCrs) {
+        this.sourceCrs = sourceCrs;
+    }
+
+    public TileMatrixSet getTileMatrixSet() {
+        return tileMatrixSet;
+    }
+
+    public void setTileMatrixSet(TileMatrixSet tileMatrixSet) {
+        this.tileMatrixSet = tileMatrixSet;
+    }
+
+    public Hints getHints() {
+        return hints;
+    }
+
+    public void setHints(Hints hints) {
+        this.hints = hints;
+    }
+
+    public int getBuffer_factor() {
+        return buffer_factor;
+    }
+
+    public void setBuffer_factor(int buffer_factor) {
+        this.buffer_factor = buffer_factor;
+    }
+
+    public GeometryDescriptor getGeometryDescriptor() {
+        return geometryDescriptor;
+    }
+
+    public void setGeometryDescriptor(GeometryDescriptor geometryDescriptor) {
+        this.geometryDescriptor = geometryDescriptor;
     }
 }

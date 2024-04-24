@@ -19,4 +19,27 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-main</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>no.ecc.vectortile</groupId>
+            <artifactId>java-vector-tile</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.geo-atlas.library</groupId>
+            <artifactId>io</artifactId>
+            <version>${revision}</version>
+        </dependency>
+    </dependencies>
+
 </project>
