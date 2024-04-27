@@ -34,7 +34,7 @@ import java.sql.SQLException;
  **/
 public abstract class AbstractReadAction {
 
-    private static final FilterFactory2 filterFactory = CommonFactoryFinder.getFilterFactory2();
+    protected static final FilterFactory2 filterFactory = CommonFactoryFinder.getFilterFactory2();
 
     protected Logger log = LoggerFactory.getLogger(this.getClass());
 

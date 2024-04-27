@@ -155,7 +155,7 @@ public class ActionPipeline {
     }
 
     private Map<String, Object> getProperties(ComplexAttribute feature) {
-        Map<String, Object> props = new TreeMap();
+        Map<String, Object> props = new TreeMap<>();
         Iterator var3 = feature.getProperties().iterator();
 
         while (var3.hasNext()) {
