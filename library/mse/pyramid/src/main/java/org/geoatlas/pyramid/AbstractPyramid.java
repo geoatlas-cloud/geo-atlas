@@ -1,11 +1,9 @@
 package org.geoatlas.pyramid;
 
-import org.geoatlas.metadata.model.FeatureLayerInfo;
-import org.geoatlas.metadata.GeoAtlasMetadataContext;
 import org.geoatlas.pyramid.action.ActionPipeline;
 import org.geoatlas.tile.TileObject;
 import org.geoatlas.tile.TileRequest;
-import org.geotools.data.DataStore;
+import org.geotools.data.simple.SimpleFeatureSource;
 
 import java.io.IOException;
 
@@ -23,15 +21,7 @@ public abstract class AbstractPyramid implements Pyramid{
     }
 
     @Override
-    public TileObject getTile(TileRequest request) throws IOException {
-        FeatureLayerInfo featureLayerInfo = GeoAtlasMetadataContext.getFeatureLayerInfo(request.getNamespace(), request.getLayer());
-        if (featureLayerInfo == null) {
-            throw new RuntimeException("FeatureLayerInfo not found");
-        }
-        DataStore dataStore = GeoAtlasMetadataContext.getDataStore(featureLayerInfo.getStoreInfo().getId());
-        if (dataStore == null) {
-            throw new RuntimeException("DataStore not found");
-        }
-        return pipeline.doAction(request, dataStore.getFeatureSource(request.getLayer()));
+    public TileObject getTile(TileRequest request, SimpleFeatureSource featureSource) throws IOException {
+        return pipeline.doAction(request, featureSource);
     }
 }

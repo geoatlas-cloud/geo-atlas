@@ -2,6 +2,7 @@ package org.geoatlas.pyramid;
 
 import org.geoatlas.tile.TileObject;
 import org.geoatlas.tile.TileRequest;
+import org.geotools.data.simple.SimpleFeatureSource;
 
 import java.io.IOException;
 
@@ -11,5 +12,13 @@ import java.io.IOException;
  * @since: 1.0
  **/
 public interface Pyramid {
-    TileObject getTile(TileRequest request) throws IOException;
+
+    /**
+     * 数据源不是金字塔托管, 且当前SQLView也并未纳入到金字塔的Rule规则中, 所以此处直接传入SimpleFeatureSource即可
+     * @param request
+     * @param dataSource
+     * @return
+     * @throws IOException
+     */
+    TileObject getTile(TileRequest request, SimpleFeatureSource dataSource) throws IOException;
 }

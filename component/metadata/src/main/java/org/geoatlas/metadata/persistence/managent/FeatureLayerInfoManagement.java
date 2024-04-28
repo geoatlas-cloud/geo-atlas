@@ -5,7 +5,6 @@ import org.geoatlas.metadata.model.FeatureLayerInfo;
 import org.geoatlas.metadata.model.VirtualViewInfo;
 import org.geoatlas.metadata.persistence.repository.FeatureLayerInfoRepository;
 import org.geoatlas.metadata.persistence.repository.VirtualViewInfoRepository;
-import org.geotools.data.DataStore;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.jdbc.VirtualTable;
 import org.locationtech.jts.geom.Geometry;

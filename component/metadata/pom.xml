@@ -5,13 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.geo-atlas</groupId>
-        <artifactId>library</artifactId>
-        <version>${revision}</version>
-        <relativePath>../pom.xml</relativePath>
+        <artifactId>component</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>org.geo-atlas.library</groupId>
-    <artifactId>base</artifactId>
+    <groupId>org.geo-atlas.component</groupId>
+    <artifactId>metadata</artifactId>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -22,18 +21,23 @@
     <dependencies>
         <dependency>
             <groupId>org.geotools</groupId>
-            <artifactId>gt-main</artifactId>
+            <artifactId>gt-jdbc</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.geotools</groupId>
-            <artifactId>gt-referencing</artifactId>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jdbc</artifactId>
         </dependency>
 
         <dependency>
-            <groupId>org.geotools</groupId>
-            <artifactId>gt-epsg-hsql</artifactId>
+            <groupId>com.github.ulisesbocchio</groupId>
+            <artifactId>jasypt-spring-boot-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.geo-atlas.library</groupId>
+            <artifactId>base</artifactId>
+            <version>${revision}</version>
         </dependency>
     </dependencies>
-
 </project>
