@@ -2,7 +2,10 @@ package org.geoatlas.metadata.persistence.managent;
 
 import org.geoatlas.metadata.model.NamespaceInfo;
 import org.geoatlas.metadata.persistence.repository.NamespaceInfoRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -13,9 +16,11 @@ import org.springframework.stereotype.Service;
 public class NamespaceInfoManagement {
 
     private final NamespaceInfoRepository repository;
+    private final ModelMapper mapper;
 
-    public NamespaceInfoManagement(NamespaceInfoRepository repository) {
+    public NamespaceInfoManagement(NamespaceInfoRepository repository, ModelMapper mapper) {
         this.repository = repository;
+        this.mapper = mapper;
     }
 
     public void addNamespaceInfo(NamespaceInfo info) {
@@ -27,7 +32,14 @@ public class NamespaceInfoManagement {
     }
 
     public void updateNamespaceInfo(NamespaceInfo info) {
-        repository.save(info);
+        Optional<NamespaceInfo> old = repository.findById(info.getId());
+        if (old.isPresent()){
+            NamespaceInfo last = old.get();
+            mapper.map(info, last);
+            repository.save(last);
+        }else {
+            throw new RuntimeException("NamespaceInfo not found");
+        }
     }
 
     public NamespaceInfo getNamespaceInfo(Long id) {

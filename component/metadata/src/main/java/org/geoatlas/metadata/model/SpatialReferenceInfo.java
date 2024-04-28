@@ -1,10 +1,13 @@
 package org.geoatlas.metadata.model;
 
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.sql.Timestamp;
+import javax.validation.constraints.NotNull;
+import java.time.Instant;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -19,6 +22,7 @@ public class SpatialReferenceInfo {
 
     private String name;
 
+    @NotNull(message = "srid is required")
     private int srid;
 
     @Column("auth_name")
@@ -35,9 +39,11 @@ public class SpatialReferenceInfo {
 
     private String description;
 
-    private Timestamp created;
+    @CreatedDate
+    private Instant created;
 
-    private Timestamp modified;
+    @LastModifiedDate
+    private Instant modified;
 
     private static final String EPSG_PREFIX = "EPSG:";
 
@@ -114,19 +120,19 @@ public class SpatialReferenceInfo {
         this.description = description;
     }
 
-    public Timestamp getCreated() {
+    public Instant getCreated() {
         return created;
     }
 
-    public void setCreated(Timestamp created) {
+    public void setCreated(Instant created) {
         this.created = created;
     }
 
-    public Timestamp getModified() {
+    public Instant getModified() {
         return modified;
     }
 
-    public void setModified(Timestamp modified) {
+    public void setModified(Instant modified) {
         this.modified = modified;
     }
 }

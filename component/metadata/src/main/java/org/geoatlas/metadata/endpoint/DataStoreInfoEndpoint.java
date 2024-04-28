@@ -21,25 +21,25 @@ public class DataStoreInfoEndpoint {
     }
 
     @PostMapping
-    public ResponseEntity<?> addDataStoreInfo(DataStoreInfo info) {
+    public ResponseEntity<?> addDataStoreInfo(@RequestBody DataStoreInfo info) {
         management.addDataStoreInfo(info);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping
-    public ResponseEntity<?> removeDataStoreInfo(Long id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> removeDataStoreInfo(@PathVariable Long id) {
         management.removeDataStoreInfo(id);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping
-    public ResponseEntity<?> updateDataStoreInfo(DataStoreInfo info) {
+    public ResponseEntity<?> updateDataStoreInfo(@RequestBody DataStoreInfo info) {
         management.updateDataStoreInfo(info);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping
-    public ResponseEntity<?> getDataStoreInfo(Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getDataStoreInfo(@PathVariable Long id) {
         DataStoreInfo dataStoreInfo = management.getDataStoreInfo(id);
         if (dataStoreInfo == null) {
             return ResponseEntity.notFound().build();

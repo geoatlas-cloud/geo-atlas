@@ -23,14 +23,16 @@ public class DataStoreFactory {
         Map<String, Object> params = new HashMap<>();
         params.put("dbtype", dataStoreInfo.getType());
         params.put("host", dataStoreInfo.getHost());
-        params.put("port", dataStoreInfo.getHost());
+        params.put("port", dataStoreInfo.getPort());
         params.put("schema", dataStoreInfo.getSchema());
         params.put("database", dataStoreInfo.getDatabase());
         params.put("user", dataStoreInfo.getUser());
         params.put("passwd", dataStoreInfo.getPassword());
         params.put("preparedStatements", true);
         params.put("encode functions", true);
+        // FIXME: 2024/4/28 增加其他参数的设置
         DataStore dataStore = DataStoreFinder.getDataStore(params);
         return dataStore;
     }
+
 }

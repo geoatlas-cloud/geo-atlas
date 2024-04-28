@@ -5,6 +5,8 @@ import org.geoatlas.metadata.persistence.managent.NamespaceInfoManagement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
  * @time: 2024/4/28 11:28
@@ -21,25 +23,25 @@ public class NamespaceInfoEndpoint {
     }
 
     @PostMapping
-    public ResponseEntity<?> addNamespaceInfo(NamespaceInfo info) {
+    public ResponseEntity<?> addNamespaceInfo(@RequestBody NamespaceInfo info) {
         management.addNamespaceInfo(info);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping
-    public ResponseEntity<?> removeNamespaceInfo(Long id) {
+    @DeleteMapping("{id}")
+    public ResponseEntity<?> removeNamespaceInfo(@PathVariable Long id) {
         management.removeNamespaceInfo(id);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping
-    public ResponseEntity<?> updateNamespaceInfo(NamespaceInfo info) {
+    public ResponseEntity<?> updateNamespaceInfo(@RequestBody @Valid NamespaceInfo info) {
         management.updateNamespaceInfo(info);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping
-    public ResponseEntity<?> getNamespaceInfo(Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getNamespaceInfo(@PathVariable Long id) {
         NamespaceInfo namespaceInfo = management.getNamespaceInfo(id);
         if (namespaceInfo == null) {
             return ResponseEntity.notFound().build();

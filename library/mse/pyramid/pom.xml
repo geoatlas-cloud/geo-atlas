@@ -65,10 +65,5 @@
             <version>${revision}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.geo-atlas.library</groupId>
-            <artifactId>metadata</artifactId>
-            <version>${revision}</version>
-        </dependency>
     </dependencies>
 </project>

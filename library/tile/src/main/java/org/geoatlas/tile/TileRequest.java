@@ -25,6 +25,20 @@ public class TileRequest {
     public TileRequest() {
     }
 
+    public TileRequest(String namespace, String layer, String schema, long x, long y, long z) {
+        this(namespace, layer, schema, x, y, z, null);
+    }
+
+    public TileRequest(String namespace, String layer, String schema, long x, long y, long z, String format) {
+        this.namespace = namespace;
+        this.layer = layer;
+        this.schema = schema;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.format = format;
+    }
+
     public String getNamespace() {
         return namespace;
     }

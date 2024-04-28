@@ -1,12 +1,16 @@
 package org.geoatlas.metadata.model;
 
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Column;
-import org.springframework.data.relational.core.mapping.Embedded;
+import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  *  @see <a href="https://docs.geotools.org/latest/userguide/library/jdbc/datastore.html">JDBCDataStore</a>
@@ -22,39 +26,48 @@ public class DataStoreInfo implements Serializable {
     @Id
     private Long id;
 
-    @Embedded(onEmpty = Embedded.OnEmpty.USE_NULL)
-    private NamespaceInfo namespace;
+    @NotNull(message = "namespaceId can not be null")
+    @Column("namespace_id")
+    private Long namespaceId;
 
+    @NotBlank(message = "name can not be null.")
     private String name;
 
     private String description;
 
     // database type, Such as postgis, sqlserver, oracle
+    @NotBlank(message = "type can not be null.")
     private String type;
 
+    @NotBlank(message = "host can not be null.")
     private String host;
 
+    @NotBlank(message = "port can not be null.")
     private String port;
 
+    @NotBlank(message = "schema can not be null.")
     private String schema;
 
+    @NotBlank(message = "database can not be null.")
     private String database;
 
+    @NotBlank(message = "user can not be null.")
     private String user;
 
+    @NotBlank(message = "password can not be null.")
     private String password;
 
     // For Connection Pooling
 
     @Column("max_connections")
-    private int maxConnections;
+    private int maxConnections = -1;
 
     @Column("min_connections")
-    private int minConnections;
+    private int minConnections = -1;
 
     // connection timeout
     @Column("connection_timeout")
-    private int connectionTimeout;
+    private int connectionTimeout = -1;
 
     // Connection validation is on by default, it takes a small toll to make sure the connection is still valid before using it
     // (e.g., make sure the DBMS did not drop it due to a server side timeout). If you want to get extra performance
@@ -62,26 +75,28 @@ public class DataStoreInfo implements Serializable {
     // 连接验证在默认情况下是开启的，在使用连接之前确保连接仍然有效(例如，确保 DBMS 没有因为服务器端超时而删除连接)需要付出一点代价。
     // 如果希望获得额外的性能，并确保连接永远不会丢失，则可以将其标记为false     这里不得不Q一下OpenGauss主动关闭连接的设定
     @Column("validate_connections")
-    private boolean validateConnections;
+    private boolean validateConnections = true;
 
     // For Tweaking and Performance
 
     @Column("fetch_size")
-    private int fetchSize;
+    private int fetchSize = -1;
 
-    private Timestamp created;
+    @CreatedDate
+    private Instant created;
 
-    private Timestamp modified;
+    @LastModifiedDate
+    private Instant modified;
 
     public DataStoreInfo() {
     }
 
-    public NamespaceInfo getNamespace() {
-        return namespace;
+    public Long getNamespaceId() {
+        return namespaceId;
     }
 
-    public void setNamespace(NamespaceInfo namespace) {
-        this.namespace = namespace;
+    public void setNamespaceId(Long namespaceId) {
+        this.namespaceId = namespaceId;
     }
 
     public Long getId() {
@@ -204,19 +219,19 @@ public class DataStoreInfo implements Serializable {
         this.fetchSize = fetchSize;
     }
 
-    public Timestamp getCreated() {
+    public Instant getCreated() {
         return created;
     }
 
-    public void setCreated(Timestamp created) {
+    public void setCreated(Instant created) {
         this.created = created;
     }
 
-    public Timestamp getModified() {
+    public Instant getModified() {
         return modified;
     }
 
-    public void setModified(Timestamp modified) {
+    public void setModified(Instant modified) {
         this.modified = modified;
     }
 }

@@ -21,19 +21,19 @@ public class FeatureLayerInfoEndpoint {
     }
 
     @PostMapping
-    public ResponseEntity<?> addFeatureLayerInfo(FeatureLayerInfo info) {
+    public ResponseEntity<?> addFeatureLayerInfo(@RequestBody FeatureLayerInfo info) {
         management.addFeatureLayerInfo(info);
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping
-    public ResponseEntity<?> removeFeatureLayerInfo(Long id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> removeFeatureLayerInfo(@PathVariable Long id) {
         management.removeFeatureLayerInfo(id);
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping
-    public ResponseEntity<?> getFeatureLayerInfo(Long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getFeatureLayerInfo(@PathVariable Long id) {
         FeatureLayerInfo featureLayerInfo = management.getFeatureLayerInfo(id);
         if (featureLayerInfo == null) {
             return ResponseEntity.notFound().build();

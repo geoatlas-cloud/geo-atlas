@@ -43,16 +43,8 @@ public abstract class AbstractReadAction {
         // 2. convert bbox crs to origin data crs
         // 3. read data -> get SimpleFeatureCollection instance
         TileRequest request = context.getRequest();
-        TileMatrixSet tileMatrixSet = TileMatrixSetContext.getTileMatrixSet(request.getSchema());
-        if (tileMatrixSet == null) {
-            throw new IllegalArgumentException("TileMatrixSet not found");
-        }
-        context.setTileMatrixSet(tileMatrixSet);
-
-        BoundingBox boundingBox = tileMatrixSet.boundsFromIndex(new long[]{request.getX(), request.getY(), request.getZ()});
-        Envelope envelope = new Envelope(boundingBox.getMinX(), boundingBox.getMaxX(), boundingBox.getMinY(), boundingBox.getMaxY());
-        ReferencedEnvelope tiledBbox = new ReferencedEnvelope(envelope, tileMatrixSet.getCrs());
-        context.setTiledBbox(ReferencedEnvelope.create(tiledBbox));
+        TileMatrixSet tileMatrixSet = context.getTileMatrixSet();
+        ReferencedEnvelope tiledBbox = context.getTiledBbox();
 
         // 计算外扩缓存范围, 默认外扩 6个 pixel size的距离, 后续可以考虑根据层级浮动
         int buffer = context.getBuffer_factor();
@@ -60,9 +52,8 @@ public abstract class AbstractReadAction {
         tiledBbox.expandBy(buffer * pixelSize);
         context.setTiledExpandedBbox(tiledBbox);
 
-        GeometryDescriptor geometryDescriptor = featureSource.getSchema().getGeometryDescriptor();
-        CoordinateReferenceSystem dataCrs = geometryDescriptor.getType().getCoordinateReferenceSystem();
-        context.setSourceCrs(dataCrs);
+        GeometryDescriptor geometryDescriptor = context.getGeometryDescriptor();
+        CoordinateReferenceSystem dataCrs = context.getSourceCrs();
 
         ReferencedEnvelope finalBbox = ReferencedEnvelope.reference(tiledBbox);
         if (!CRS.equalsIgnoreMetadata(tileMatrixSet.getCrs(), dataCrs)) {

@@ -1,10 +1,14 @@
 package org.geoatlas.metadata.model;
 
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.sql.Timestamp;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.time.Instant;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -17,29 +21,40 @@ public class VirtualViewInfo {
     @Id
     private Long id;
 
+    @NotBlank(message = "virtual view name can not be null.")
     private String name;
 
+    @NotBlank(message = "virtual view sql can not be null.")
     private String sql;
 
     /**
      * 逗号分割
      */
+    @NotBlank(message = "virtual view pk columns can not be null.")
     @Column("pk_columns")
     private String pkColumns;
 
+    @NotBlank(message = "virtual view geometry column can not be null.")
     @Column("geometry_column")
     private String geometryColumn;
 
     // FIXME: 2024/4/27 后续考虑自动识别?
+    @NotNull(message = "virtual view geometry type can not be null.")
     @Column("geometry_type")
     private int geometryType;
 
     // 数据库空间参考SRID, 考虑到存在数据表中srid与数据空间参考srid不一致的情况
+    @NotNull(message = "virtual view srid can not be null.")
     private int srid;
 
-    private Timestamp created;
+    @Column("feature_layer_id")
+    private Long featureLayerId;
 
-    private Timestamp modified;
+    @CreatedDate
+    private Instant created;
+
+    @LastModifiedDate
+    private Instant modified;
 
     public VirtualViewInfo() {
     }
@@ -100,19 +115,27 @@ public class VirtualViewInfo {
         this.srid = srid;
     }
 
-    public Timestamp getCreated() {
+    public Long getFeatureLayerId() {
+        return featureLayerId;
+    }
+
+    public void setFeatureLayerId(Long featureLayerId) {
+        this.featureLayerId = featureLayerId;
+    }
+
+    public Instant getCreated() {
         return created;
     }
 
-    public void setCreated(Timestamp created) {
+    public void setCreated(Instant created) {
         this.created = created;
     }
 
-    public Timestamp getModified() {
+    public Instant getModified() {
         return modified;
     }
 
-    public void setModified(Timestamp modified) {
+    public void setModified(Instant modified) {
         this.modified = modified;
     }
 }

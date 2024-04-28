@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/geo_atlas_db_v100
+    username: postgres
+    password: 'gis@4490'
+
+jasypt:
+  encryptor:
+    password: ${JASYPT_ENCRYPTOR_PASSWORD:geo-atlas@fuyi}
+
+logging:
+  level:
+    'org.geoatlas': DEBUG
+    'org.springframework.data': INFO
+    'org.springframework.jdbc.core.JdbcTemplate': DEBUG

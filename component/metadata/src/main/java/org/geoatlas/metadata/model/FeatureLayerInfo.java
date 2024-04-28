@@ -1,10 +1,15 @@
 package org.geoatlas.metadata.model;
 
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Embedded;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.sql.Timestamp;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+import java.time.Instant;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -16,37 +21,42 @@ public class FeatureLayerInfo {
 
     @Id
     private Long id;
-
-    @Embedded(onEmpty = Embedded.OnEmpty.USE_NULL)
-    private NamespaceInfo namespace;
-
+    @NotBlank(message = "feature layer name is required.")
     private String name;
 
-    @Embedded(onEmpty = Embedded.OnEmpty.USE_NULL)
-    private VirtualViewInfo view;
+    @NotNull(message = "namespaceId is required.")
+    @Column("namespace_id")
+    private Long namespaceId;
 
     // 如果指定, 将会覆盖数据库读取到的空间参考, 可以为空
-    @Embedded(onEmpty = Embedded.OnEmpty.USE_NULL)
-    private SpatialReferenceInfo spatialReferenceInfo;
+    @Column("spatial_ref_id")
+    private Long spatialReferenceId;
 
-    @Embedded(onEmpty = Embedded.OnEmpty.USE_NULL)
-    private DataStoreInfo storeInfo;
+    @NotNull(message = "datastoreId is required.")
+    @Column("datastore_id")
+    private Long datastoreId;
+
+    @NotNull(message = "view is required.")
+    @MappedCollection(idColumn = "feature_layer_id")
+    private VirtualViewInfo view;
 
     private String description;
 
-    private Timestamp created;
+    @CreatedDate
+    private Instant created;
 
-    private Timestamp modified;
+    @LastModifiedDate
+    private Instant modified;
 
     public FeatureLayerInfo() {
     }
 
-    public NamespaceInfo getNamespace() {
-        return namespace;
+    public Long getNamespaceId() {
+        return namespaceId;
     }
 
-    public void setNamespace(NamespaceInfo namespace) {
-        this.namespace = namespace;
+    public void setNamespaceId(Long namespaceId) {
+        this.namespaceId = namespaceId;
     }
 
     public Long getId() {
@@ -73,20 +83,20 @@ public class FeatureLayerInfo {
         this.view = view;
     }
 
-    public SpatialReferenceInfo getSpatialReferenceInfo() {
-        return spatialReferenceInfo;
+    public Long getSpatialReferenceId() {
+        return spatialReferenceId;
     }
 
-    public void setSpatialReferenceInfo(SpatialReferenceInfo spatialReferenceInfo) {
-        this.spatialReferenceInfo = spatialReferenceInfo;
+    public void setSpatialReferenceId(Long spatialReferenceId) {
+        this.spatialReferenceId = spatialReferenceId;
     }
 
-    public DataStoreInfo getStoreInfo() {
-        return storeInfo;
+    public Long getDatastoreId() {
+        return datastoreId;
     }
 
-    public void setStoreInfo(DataStoreInfo storeInfo) {
-        this.storeInfo = storeInfo;
+    public void setDatastoreId(Long datastoreId) {
+        this.datastoreId = datastoreId;
     }
 
     public String getDescription() {
@@ -97,19 +107,19 @@ public class FeatureLayerInfo {
         this.description = description;
     }
 
-    public Timestamp getCreated() {
+    public Instant getCreated() {
         return created;
     }
 
-    public void setCreated(Timestamp created) {
+    public void setCreated(Instant created) {
         this.created = created;
     }
 
-    public Timestamp getModified() {
+    public Instant getModified() {
         return modified;
     }
 
-    public void setModified(Timestamp modified) {
+    public void setModified(Instant modified) {
         this.modified = modified;
     }
 }

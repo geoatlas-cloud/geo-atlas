@@ -2,6 +2,7 @@ package org.geoatlas.metadata.persistence.managent;
 
 import org.geoatlas.metadata.GeoAtlasMetadataContext;
 import org.geoatlas.metadata.model.FeatureLayerInfo;
+import org.geoatlas.metadata.model.NamespaceInfo;
 import org.geoatlas.metadata.model.VirtualViewInfo;
 import org.geoatlas.metadata.persistence.repository.FeatureLayerInfoRepository;
 import org.geoatlas.metadata.persistence.repository.VirtualViewInfoRepository;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -27,33 +29,43 @@ import java.util.List;
 public class FeatureLayerInfoManagement {
 
     private final FeatureLayerInfoRepository repository;
-    private final VirtualViewInfoRepository viewInfoRepository;
 
-    public FeatureLayerInfoManagement(FeatureLayerInfoRepository repository, VirtualViewInfoRepository viewInfoRepository) {
+    private final NamespaceInfoManagement namespaceInfoManagement;
+
+    public FeatureLayerInfoManagement(FeatureLayerInfoRepository repository,
+                                      NamespaceInfoManagement namespaceInfoManagement) {
         this.repository = repository;
-        this.viewInfoRepository = viewInfoRepository;
+        this.namespaceInfoManagement = namespaceInfoManagement;
     }
 
     @Transactional
     public void addFeatureLayerInfo(FeatureLayerInfo info) {
         // fetch DataStore, and create virtual table(sql view)
-        JDBCDataStore dataStore = (JDBCDataStore) GeoAtlasMetadataContext.getDataStore(info.getStoreInfo().getId());
+        NamespaceInfo namespaceInfo = namespaceInfoManagement.getNamespaceInfo(info.getNamespaceId());
+        if (namespaceInfo == null){
+            throw new RuntimeException("namespace not found");
+        }
+        JDBCDataStore dataStore = (JDBCDataStore) GeoAtlasMetadataContext.getDataStore(namespaceInfo.getName());
         VirtualTable virtualTable = getVirtualTable(info);
         try {
             dataStore.createVirtualTable(virtualTable);
         } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
-        VirtualViewInfo viewInfo = viewInfoRepository.save(info.getView());
-        // 其会回带ID, 所以重新设置
-        info.setView(viewInfo);
         FeatureLayerInfo saved = repository.save(info);
-        GeoAtlasMetadataContext.addFeatureLayerInfo(saved);
+        GeoAtlasMetadataContext.addFeatureLayerInfo(namespaceInfo.getName(), saved);
     }
 
     public void removeFeatureLayerInfo(Long id) {
-        repository.deleteById(id);
-        GeoAtlasMetadataContext.removeDataStore(id);
+        Optional<FeatureLayerInfo> target = repository.findById(id);
+        if (target.isPresent()){
+            FeatureLayerInfo featureLayerInfo = target.get();
+            NamespaceInfo namespaceInfo = namespaceInfoManagement.getNamespaceInfo(featureLayerInfo.getNamespaceId());
+            if (namespaceInfo != null) {
+                repository.deleteById(id);
+                GeoAtlasMetadataContext.removeFeatureLayerInfo(namespaceInfo.getName(), featureLayerInfo.getName());
+            }
+        }
     }
 
     public FeatureLayerInfo getFeatureLayerInfo(Long id) {

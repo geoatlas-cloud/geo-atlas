@@ -1,10 +1,13 @@
 package org.geoatlas.metadata.model;
 
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.relational.core.mapping.Table;
 
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -19,15 +22,18 @@ public class NamespaceInfo implements Serializable {
     @Id
     private Long id;
 
+    @NotBlank(message = "name can not be null.")
     private String name;
 
     private String description;
 
     private String uri;
 
-    private Timestamp created;
+    @CreatedDate
+    private Instant created;
 
-    private Timestamp modified;
+    @LastModifiedDate
+    private Instant modified;
 
     public NamespaceInfo() {
     }
@@ -64,19 +70,19 @@ public class NamespaceInfo implements Serializable {
         this.uri = uri;
     }
 
-    public Timestamp getCreated() {
+    public Instant getCreated() {
         return created;
     }
 
-    public void setCreated(Timestamp created) {
+    public void setCreated(Instant created) {
         this.created = created;
     }
 
-    public Timestamp getModified() {
+    public Instant getModified() {
         return modified;
     }
 
-    public void setModified(Timestamp modified) {
+    public void setModified(Instant modified) {
         this.modified = modified;
     }
 }

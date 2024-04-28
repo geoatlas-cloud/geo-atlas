@@ -6,8 +6,10 @@ import org.geoatlas.io.ByteArrayResource;
 import org.geoatlas.pyramid.action.vector.AbstractReadAction;
 import org.geoatlas.pyramid.action.vector.Pipeline;
 import org.geoatlas.pyramid.action.vector.PipelineBuilder;
+import org.geoatlas.pyramid.index.BoundingBox;
 import org.geoatlas.pyramid.index.TileMatrix;
 import org.geoatlas.pyramid.index.TileMatrixSet;
+import org.geoatlas.pyramid.index.TileMatrixSetContext;
 import org.geoatlas.tile.TileObject;
 import org.geoatlas.tile.TileRequest;
 import org.geoatlas.tile.vector.mapbox.MapBoxTileBuilder;
@@ -16,6 +18,7 @@ import org.geotools.data.simple.SimpleFeatureIterator;
 import org.geotools.data.simple.SimpleFeatureSource;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.util.factory.Hints;
+import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.Attribute;
 import org.opengis.feature.ComplexAttribute;
@@ -78,22 +81,36 @@ public class ActionPipeline {
     public TileObject doAction(TileRequest request, SimpleFeatureSource featureSource) throws IOException {
         Stopwatch sw = Stopwatch.createStarted();
         ActionContext context = new ActionContext(request, DEFAULT_BUFFER_FACTOR);
-        TileMatrixSet tileMatrixSet = context.getTileMatrixSet();
+        TileMatrixSet tileMatrixSet = TileMatrixSetContext.getTileMatrixSet(request.getSchema());
+        if (tileMatrixSet == null) {
+            throw new IllegalArgumentException("TileMatrixSet not found");
+        }
+        context.setTileMatrixSet(tileMatrixSet);
         TileMatrix matrix = tileMatrixSet.getMatrix((int) request.getZ());
+
+        BoundingBox boundingBox = tileMatrixSet.boundsFromIndex(new long[]{request.getX(), request.getY(), request.getZ()});
+        Envelope envelope = new Envelope(boundingBox.getMinX(), boundingBox.getMaxX(), boundingBox.getMinY(), boundingBox.getMaxY());
+        ReferencedEnvelope tiledBbox = new ReferencedEnvelope(envelope, tileMatrixSet.getCrs());
+        context.setTiledBbox(ReferencedEnvelope.create(tiledBbox));
+
         int mapWidth = matrix.getTileWidth();
         int mapHeight = matrix.getTileHeight();
         Rectangle paintArea = new Rectangle(mapWidth, mapHeight);
         if (this.tileBuilderFactory.shouldOversampleScale()) {
             paintArea = new Rectangle(this.tileBuilderFactory.getOversampleX() * mapWidth, this.tileBuilderFactory.getOversampleY() * mapHeight);
         }
-        Pipeline pipeline = getPipeline(context.getTiledBbox(), paintArea, context.getSourceCrs(), featureSource.getSupportedHints(),
+        // FIXME: 2024/4/28 存在获取不到GeometryDescriptor的情况, 此时可以给定默认或者给出报错提示, 这也是为什么可以提前指定crs的原因
+        GeometryDescriptor geometryDescriptor = featureSource.getSchema().getGeometryDescriptor();
+        CoordinateReferenceSystem dataCrs = geometryDescriptor.getType().getCoordinateReferenceSystem();
+        context.setSourceCrs(dataCrs);
+        context.setGeometryDescriptor(geometryDescriptor);
+
+        Pipeline pipeline = getPipeline(context.getTiledBbox(), paintArea, dataCrs, featureSource.getSupportedHints(),
                 context.getHints(), context.getBuffer_factor());
         if (Objects.isNull(pipeline)) {
             return null;
         }
-        MapBoxTileBuilder vectorTileBuilder = this.tileBuilderFactory.newBuilder(paintArea, context.getTiledBbox());
-
-        GeometryDescriptor geometryDescriptor = context.getGeometryDescriptor();
+        MapBoxTileBuilder vectorTileBuilder = this.tileBuilderFactory.newBuilder(paintArea, tiledBbox);
         // read
         int count = 0;
         int total = 0;
