@@ -1,4 +1,9 @@
-package org.geoatlas.metadata;
+package org.geoatlas.metadata.model;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Embedded;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.io.Serializable;
 
@@ -9,12 +14,15 @@ import java.io.Serializable;
  * @time: 2024/4/22 10:17
  * @since: 1.0
  **/
+@Table("ga_datastore_info")
 public class DataStoreInfo implements Serializable {
     private static final long serialVersionUID = 6803793260512509711L;
 
-    private NamespaceInfo namespace;
+    @Id
+    private Long id;
 
-    private String identifier;
+    @Embedded(onEmpty = Embedded.OnEmpty.USE_NULL)
+    private NamespaceInfo namespace;
 
     private String name;
 
@@ -37,11 +45,14 @@ public class DataStoreInfo implements Serializable {
 
     // For Connection Pooling
 
+    @Column("max_connections")
     private int maxConnections;
 
+    @Column("min_connections")
     private int minConnections;
 
     // connection timeout
+    @Column("connection_timeout")
     private int connectionTimeout;
 
     // Connection validation is on by default, it takes a small toll to make sure the connection is still valid before using it
@@ -49,10 +60,12 @@ public class DataStoreInfo implements Serializable {
     // and you’re sure the connections will never be dropped you can disable connection validation with false
     // 连接验证在默认情况下是开启的，在使用连接之前确保连接仍然有效(例如，确保 DBMS 没有因为服务器端超时而删除连接)需要付出一点代价。
     // 如果希望获得额外的性能，并确保连接永远不会丢失，则可以将其标记为false     这里不得不Q一下OpenGauss主动关闭连接的设定
+    @Column("validate_connections")
     private boolean validateConnections;
 
     // For Tweaking and Performance
 
+    @Column("fetch_size")
     private int fetchSize;
 
     public DataStoreInfo() {
@@ -66,12 +79,12 @@ public class DataStoreInfo implements Serializable {
         this.namespace = namespace;
     }
 
-    public String getIdentifier() {
-        return identifier;
+    public Long getId() {
+        return id;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {

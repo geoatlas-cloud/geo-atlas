@@ -1,5 +1,6 @@
 package org.geoatlas.metadata;
 
+import org.geoatlas.metadata.model.DataStoreInfo;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
 

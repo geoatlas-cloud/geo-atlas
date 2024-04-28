@@ -1,24 +1,34 @@
-package org.geoatlas.metadata;
+package org.geoatlas.metadata.model;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
  * @time: 2024/4/22 14:15
  * @since: 1.0
  **/
+@Table("ga_spatial_reference_info")
 public class SpatialReferenceInfo {
 
-    private String identifier;
+    @Id
+    private Long id;
 
     private String name;
 
     private int srid;
 
+    @Column("auth_name")
     private String authName;
 
+    @Column("auth_srid")
     private int authSrid;
 
+    @Column("wkt_text")
     private String wktText;
 
+    @Column("proj4_text")
     private String proj4Text;
 
     private String description;
@@ -28,12 +38,12 @@ public class SpatialReferenceInfo {
     public SpatialReferenceInfo() {
     }
 
-    public String getIdentifier() {
-        return identifier;
+    public Long getId() {
+        return id;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {

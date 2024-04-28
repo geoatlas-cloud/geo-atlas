@@ -1,6 +1,6 @@
 package org.geoatlas.pyramid;
 
-import org.geoatlas.metadata.FeatureLayerInfo;
+import org.geoatlas.metadata.model.FeatureLayerInfo;
 import org.geoatlas.metadata.GeoAtlasMetadataContext;
 import org.geoatlas.pyramid.action.ActionPipeline;
 import org.geoatlas.tile.TileObject;
@@ -28,7 +28,7 @@ public abstract class AbstractPyramid implements Pyramid{
         if (featureLayerInfo == null) {
             throw new RuntimeException("FeatureLayerInfo not found");
         }
-        DataStore dataStore = GeoAtlasMetadataContext.getDataStore(featureLayerInfo.getStoreInfo().getIdentifier());
+        DataStore dataStore = GeoAtlasMetadataContext.getDataStore(featureLayerInfo.getStoreInfo().getId());
         if (dataStore == null) {
             throw new RuntimeException("DataStore not found");
         }

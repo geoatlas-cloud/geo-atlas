@@ -61,13 +61,13 @@
 
         <dependency>
             <groupId>org.geo-atlas.library</groupId>
-            <artifactId>metadata</artifactId>
+            <artifactId>tile</artifactId>
             <version>${revision}</version>
         </dependency>
 
         <dependency>
             <groupId>org.geo-atlas.library</groupId>
-            <artifactId>tile</artifactId>
+            <artifactId>metadata</artifactId>
             <version>${revision}</version>
         </dependency>
     </dependencies>

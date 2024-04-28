@@ -1,6 +1,7 @@
-package org.geoatlas.metadata;
+package org.geoatlas.metadata.model;
 
-import org.geotools.jdbc.JDBCDataStore;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Embedded;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -9,16 +10,22 @@ import org.geotools.jdbc.JDBCDataStore;
  **/
 public class FeatureLayerInfo {
 
-    private NamespaceInfo namespace;
+    @Id
+    private Long id;
 
-    private String identifier;
+    @Embedded(onEmpty = Embedded.OnEmpty.USE_NULL)
+    private NamespaceInfo namespace;
 
     private String name;
 
-    private JDBCDataStore dataStore;
+    @Embedded(onEmpty = Embedded.OnEmpty.USE_NULL)
+    private VirtualViewInfo view;
 
+    // 如果指定, 将会覆盖数据库读取到的空间参考, 可以为空
+    @Embedded(onEmpty = Embedded.OnEmpty.USE_NULL)
     private SpatialReferenceInfo spatialReferenceInfo;
 
+    @Embedded(onEmpty = Embedded.OnEmpty.USE_NULL)
     private DataStoreInfo storeInfo;
 
     public FeatureLayerInfo() {
@@ -32,12 +39,12 @@ public class FeatureLayerInfo {
         this.namespace = namespace;
     }
 
-    public String getIdentifier() {
-        return identifier;
+    public Long getId() {
+        return id;
     }
 
-    public void setIdentifier(String identifier) {
-        this.identifier = identifier;
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -48,12 +55,12 @@ public class FeatureLayerInfo {
         this.name = name;
     }
 
-    public JDBCDataStore getDataStore() {
-        return dataStore;
+    public VirtualViewInfo getView() {
+        return view;
     }
 
-    public void setDataStore(JDBCDataStore dataStore) {
-        this.dataStore = dataStore;
+    public void setView(VirtualViewInfo view) {
+        this.view = view;
     }
 
     public SpatialReferenceInfo getSpatialReferenceInfo() {
