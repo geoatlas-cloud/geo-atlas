@@ -1,0 +1,3 @@
+jasypt:
+  encryptor:
+    password: ${JASYPT_ENCRYPTOR_PASSWORD:geo-atlas@fuyi}

@@ -6,6 +6,7 @@ import org.springframework.data.relational.core.mapping.Embedded;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 /**
  *  @see <a href="https://docs.geotools.org/latest/userguide/library/jdbc/datastore.html">JDBCDataStore</a>
@@ -67,6 +68,10 @@ public class DataStoreInfo implements Serializable {
 
     @Column("fetch_size")
     private int fetchSize;
+
+    private Timestamp created;
+
+    private Timestamp modified;
 
     public DataStoreInfo() {
     }
@@ -199,4 +204,19 @@ public class DataStoreInfo implements Serializable {
         this.fetchSize = fetchSize;
     }
 
+    public Timestamp getCreated() {
+        return created;
+    }
+
+    public void setCreated(Timestamp created) {
+        this.created = created;
+    }
+
+    public Timestamp getModified() {
+        return modified;
+    }
+
+    public void setModified(Timestamp modified) {
+        this.modified = modified;
+    }
 }

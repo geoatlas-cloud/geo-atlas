@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -12,7 +13,6 @@ import java.io.Serializable;
  **/
 @Table("ga_namespace_info")
 public class NamespaceInfo implements Serializable {
-
 
     private static final long serialVersionUID = -4363520941758282505L;
 
@@ -24,6 +24,10 @@ public class NamespaceInfo implements Serializable {
     private String description;
 
     private String uri;
+
+    private Timestamp created;
+
+    private Timestamp modified;
 
     public NamespaceInfo() {
     }
@@ -58,5 +62,21 @@ public class NamespaceInfo implements Serializable {
 
     public void setUri(String uri) {
         this.uri = uri;
+    }
+
+    public Timestamp getCreated() {
+        return created;
+    }
+
+    public void setCreated(Timestamp created) {
+        this.created = created;
+    }
+
+    public Timestamp getModified() {
+        return modified;
+    }
+
+    public void setModified(Timestamp modified) {
+        this.modified = modified;
     }
 }

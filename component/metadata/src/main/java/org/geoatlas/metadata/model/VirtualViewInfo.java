@@ -4,6 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.sql.Timestamp;
+
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
  * @time: 2024/4/27 23:28
@@ -34,6 +36,10 @@ public class VirtualViewInfo {
 
     // 数据库空间参考SRID, 考虑到存在数据表中srid与数据空间参考srid不一致的情况
     private int srid;
+
+    private Timestamp created;
+
+    private Timestamp modified;
 
     public VirtualViewInfo() {
     }
@@ -92,5 +98,21 @@ public class VirtualViewInfo {
 
     public void setSrid(int srid) {
         this.srid = srid;
+    }
+
+    public Timestamp getCreated() {
+        return created;
+    }
+
+    public void setCreated(Timestamp created) {
+        this.created = created;
+    }
+
+    public Timestamp getModified() {
+        return modified;
+    }
+
+    public void setModified(Timestamp modified) {
+        this.modified = modified;
     }
 }

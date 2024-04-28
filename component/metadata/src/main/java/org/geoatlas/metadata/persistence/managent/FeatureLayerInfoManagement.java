@@ -51,6 +51,15 @@ public class FeatureLayerInfoManagement {
         GeoAtlasMetadataContext.addFeatureLayerInfo(saved);
     }
 
+    public void removeFeatureLayerInfo(Long id) {
+        repository.deleteById(id);
+        GeoAtlasMetadataContext.removeDataStore(id);
+    }
+
+    public FeatureLayerInfo getFeatureLayerInfo(Long id) {
+        return repository.findById(id).orElse(null);
+    }
+
     private static VirtualTable getVirtualTable(FeatureLayerInfo info) {
         VirtualViewInfo view = info.getView();
         VirtualTable virtualTable = new VirtualTable(view.getName(), view.getSql());

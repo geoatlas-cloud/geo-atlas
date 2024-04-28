@@ -36,7 +36,7 @@ public class DataStoreInfoManagement {
         GeoAtlasMetadataContext.addDataStore(saved);
     }
 
-    public void deleteDataStoreInfo(Long id) {
+    public void removeDataStoreInfo(Long id) {
         repository.deleteById(id);
         GeoAtlasMetadataContext.removeDataStore(id);
     }

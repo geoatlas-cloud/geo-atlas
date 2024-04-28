@@ -4,6 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
+import java.sql.Timestamp;
+
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
  * @time: 2024/4/22 14:15
@@ -32,6 +34,10 @@ public class SpatialReferenceInfo {
     private String proj4Text;
 
     private String description;
+
+    private Timestamp created;
+
+    private Timestamp modified;
 
     private static final String EPSG_PREFIX = "EPSG:";
 
@@ -106,5 +112,21 @@ public class SpatialReferenceInfo {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Timestamp getCreated() {
+        return created;
+    }
+
+    public void setCreated(Timestamp created) {
+        this.created = created;
+    }
+
+    public Timestamp getModified() {
+        return modified;
+    }
+
+    public void setModified(Timestamp modified) {
+        this.modified = modified;
     }
 }

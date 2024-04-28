@@ -2,12 +2,16 @@ package org.geoatlas.metadata.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Embedded;
+import org.springframework.data.relational.core.mapping.Table;
+
+import java.sql.Timestamp;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
  * @time: 2024/4/22 9:49
  * @since: 1.0
  **/
+@Table("ga_feature_layer_info")
 public class FeatureLayerInfo {
 
     @Id
@@ -27,6 +31,12 @@ public class FeatureLayerInfo {
 
     @Embedded(onEmpty = Embedded.OnEmpty.USE_NULL)
     private DataStoreInfo storeInfo;
+
+    private String description;
+
+    private Timestamp created;
+
+    private Timestamp modified;
 
     public FeatureLayerInfo() {
     }
@@ -77,5 +87,29 @@ public class FeatureLayerInfo {
 
     public void setStoreInfo(DataStoreInfo storeInfo) {
         this.storeInfo = storeInfo;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Timestamp getCreated() {
+        return created;
+    }
+
+    public void setCreated(Timestamp created) {
+        this.created = created;
+    }
+
+    public Timestamp getModified() {
+        return modified;
+    }
+
+    public void setModified(Timestamp modified) {
+        this.modified = modified;
     }
 }
