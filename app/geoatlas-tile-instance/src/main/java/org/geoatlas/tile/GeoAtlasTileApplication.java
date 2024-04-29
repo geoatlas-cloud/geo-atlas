@@ -13,6 +13,8 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan("org.geoatlas")
 public class GeoAtlasTileApplication {
     public static void main(String[] args) {
+        // Setting the system-wide default at startup time
+        System.setProperty("org.geotools.referencing.forceXY", "true");
         SpringApplication.run(GeoAtlasTileApplication.class, args);
     }
 }

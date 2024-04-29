@@ -1,8 +1,12 @@
-package org.geoatlas.metadata;
+package org.geoatlas.metadata.context;
 
+import org.geoatlas.metadata.DataStoreFactory;
 import org.geoatlas.metadata.model.DataStoreInfo;
 import org.geoatlas.metadata.model.FeatureLayerInfo;
+import org.geoatlas.metadata.model.NamespaceInfo;
+import org.geoatlas.metadata.model.SpatialReferenceInfo;
 import org.geotools.data.DataStore;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.IOException;
 import java.util.Map;
@@ -15,11 +19,23 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 public class GeoAtlasMetadataContext {
 
+    private static final Map<String, NamespaceInfo> NAMESPACE_INFO_CACHE = new ConcurrentHashMap<>();
+
     private static final Map<String, DataStore> DATA_STORE_CACHE = new ConcurrentHashMap<>();
 
     private static final Map<String, FeatureLayerInfo> FEATURE_LAYER_INFO_CACHE = new ConcurrentHashMap<>();
 
+    private static final Map<Long, CoordinateReferenceSystem> COORDINATE_REFERENCE_SYSTEM_CACHE = new ConcurrentHashMap<>();
+
     private static final String DEFAULT_SPLIT_CHAR = ":";
+
+    public static void addNamespace(NamespaceInfo namespace) {
+        NAMESPACE_INFO_CACHE.put(namespace.getName(), namespace);
+    }
+
+    public static NamespaceInfo getNamespace(String namespace) {
+        return NAMESPACE_INFO_CACHE.get(namespace);
+    }
 
     public static DataStore addDataStore(String namespace, DataStoreInfo dataStoreInfo) {
         return DATA_STORE_CACHE.computeIfAbsent(namespace, store -> {
@@ -68,6 +84,14 @@ public class GeoAtlasMetadataContext {
 
     public static void removeFeatureLayerInfo(String namespace, String layerName) {
         FEATURE_LAYER_INFO_CACHE.remove(identifier(namespace, layerName));
+    }
+
+    public static CoordinateReferenceSystem getCoordinateReferenceSystem(Long spatialReferenceId) {
+        return COORDINATE_REFERENCE_SYSTEM_CACHE.get(spatialReferenceId);
+    }
+
+    public static void addCoordinateReferenceSystem(Long spatialReferenceId, CoordinateReferenceSystem coordinateReferenceSystem) {
+        COORDINATE_REFERENCE_SYSTEM_CACHE.put(spatialReferenceId, coordinateReferenceSystem);
     }
 
     private static String identifier(String namespace, String layerName) {

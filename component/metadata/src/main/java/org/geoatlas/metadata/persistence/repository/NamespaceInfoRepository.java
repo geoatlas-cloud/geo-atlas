@@ -9,4 +9,9 @@ import org.springframework.data.repository.CrudRepository;
  * @since: 1.0
  **/
 public interface NamespaceInfoRepository extends CrudRepository<NamespaceInfo, Long> {
+
+    NamespaceInfo findFirstByName(String name);
+
+    boolean existsByName(String name);
+
 }

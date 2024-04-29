@@ -24,6 +24,9 @@ public class NamespaceInfoManagement {
     }
 
     public void addNamespaceInfo(NamespaceInfo info) {
+        if (repository.existsByName(info.getName())) {
+            throw new RuntimeException("NamespaceInfo already exists");
+        }
         repository.save(info);
     }
 
@@ -40,6 +43,10 @@ public class NamespaceInfoManagement {
         }else {
             throw new RuntimeException("NamespaceInfo not found");
         }
+    }
+
+    public NamespaceInfo findByName(String name) {
+        return repository.findFirstByName(name);
     }
 
     public NamespaceInfo getNamespaceInfo(Long id) {

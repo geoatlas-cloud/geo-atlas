@@ -78,39 +78,25 @@ public class ActionPipeline {
         this.clipToMapBounds = clip;
     }
 
-    public TileObject doAction(TileRequest request, SimpleFeatureSource featureSource) throws IOException {
+    public TileObject doAction(TileRequest request, SimpleFeatureSource featureSource, CoordinateReferenceSystem forceDeclaredCrs) throws IOException {
         Stopwatch sw = Stopwatch.createStarted();
-        ActionContext context = new ActionContext(request, DEFAULT_BUFFER_FACTOR);
-        TileMatrixSet tileMatrixSet = TileMatrixSetContext.getTileMatrixSet(request.getSchema());
-        if (tileMatrixSet == null) {
-            throw new IllegalArgumentException("TileMatrixSet not found");
-        }
-        context.setTileMatrixSet(tileMatrixSet);
+        ActionContext context = prepareContext(request, featureSource, forceDeclaredCrs);
+
+        TileMatrixSet tileMatrixSet = context.getTileMatrixSet();
         TileMatrix matrix = tileMatrixSet.getMatrix((int) request.getZ());
-
-        BoundingBox boundingBox = tileMatrixSet.boundsFromIndex(new long[]{request.getX(), request.getY(), request.getZ()});
-        Envelope envelope = new Envelope(boundingBox.getMinX(), boundingBox.getMaxX(), boundingBox.getMinY(), boundingBox.getMaxY());
-        ReferencedEnvelope tiledBbox = new ReferencedEnvelope(envelope, tileMatrixSet.getCrs());
-        context.setTiledBbox(ReferencedEnvelope.create(tiledBbox));
-
         int mapWidth = matrix.getTileWidth();
         int mapHeight = matrix.getTileHeight();
         Rectangle paintArea = new Rectangle(mapWidth, mapHeight);
         if (this.tileBuilderFactory.shouldOversampleScale()) {
             paintArea = new Rectangle(this.tileBuilderFactory.getOversampleX() * mapWidth, this.tileBuilderFactory.getOversampleY() * mapHeight);
         }
-        // FIXME: 2024/4/28 存在获取不到GeometryDescriptor的情况, 此时可以给定默认或者给出报错提示, 这也是为什么可以提前指定crs的原因
-        GeometryDescriptor geometryDescriptor = featureSource.getSchema().getGeometryDescriptor();
-        CoordinateReferenceSystem dataCrs = geometryDescriptor.getType().getCoordinateReferenceSystem();
-        context.setSourceCrs(dataCrs);
-        context.setGeometryDescriptor(geometryDescriptor);
 
-        Pipeline pipeline = getPipeline(context.getTiledBbox(), paintArea, dataCrs, featureSource.getSupportedHints(),
+        Pipeline pipeline = getPipeline(context.getTiledBbox(), paintArea, context.getSourceCrs(), featureSource.getSupportedHints(),
                 context.getHints(), context.getBuffer_factor());
         if (Objects.isNull(pipeline)) {
             return null;
         }
-        MapBoxTileBuilder vectorTileBuilder = this.tileBuilderFactory.newBuilder(paintArea, tiledBbox);
+        MapBoxTileBuilder vectorTileBuilder = this.tileBuilderFactory.newBuilder(paintArea, context.getTiledBbox());
         // read
         int count = 0;
         int total = 0;
@@ -133,9 +119,10 @@ public class ActionPipeline {
                 if (!finalGeom.isEmpty()) {
                     String layerName = feature.getType().getName().getLocalPart();
                     String featureId = feature.getIdentifier().toString();
-                    String geometryName = geometryDescriptor.getName().getLocalPart();
+                    // 无效操作, 予以注释
+//                    String geometryName = geometryDescriptor.getName().getLocalPart();
                     Map<String, Object> properties = this.getProperties(feature);
-                    vectorTileBuilder.addFeature(layerName, featureId, geometryName, finalGeom, properties);
+                    vectorTileBuilder.addFeature(layerName, featureId, null, finalGeom, properties);
                     ++count;
                 }
             }
@@ -146,7 +133,35 @@ public class ActionPipeline {
         String msg = String.format("Added %,d out of %,d features of '%s' in %s", count, total, request.getLayer(), sw);
         log.info(msg);
         byte[] rawTile = vectorTileBuilder.build();
-        return TileObject.createCompleteTileObject(request, new ByteArrayResource(rawTile));
+        return TileObject.createCompleteTileObject(request, new ByteArrayResource(rawTile), this.tileBuilderFactory.getMimeType());
+    }
+
+    protected ActionContext prepareContext(TileRequest request, SimpleFeatureSource featureSource, CoordinateReferenceSystem forceDeclaredCrs) {
+        ActionContext context = new ActionContext(request, DEFAULT_BUFFER_FACTOR);
+
+        TileMatrixSet tileMatrixSet = TileMatrixSetContext.getTileMatrixSet(request.getSchema());
+        if (tileMatrixSet == null) {
+            throw new IllegalArgumentException("TileMatrixSet not found");
+        }
+        context.setTileMatrixSet(tileMatrixSet);
+
+        BoundingBox boundingBox = tileMatrixSet.boundsFromIndex(new long[]{request.getX(), request.getY(), request.getZ()});
+        Envelope envelope = new Envelope(boundingBox.getMinX(), boundingBox.getMaxX(), boundingBox.getMinY(), boundingBox.getMaxY());
+        ReferencedEnvelope tiledBbox = new ReferencedEnvelope(envelope, tileMatrixSet.getCrs());
+        context.setTiledBbox(ReferencedEnvelope.create(tiledBbox));
+
+        GeometryDescriptor geometryDescriptor = featureSource.getSchema().getGeometryDescriptor();
+        context.setGeometryDescriptor(geometryDescriptor);
+        if (forceDeclaredCrs != null) {
+            context.setSourceCrs(forceDeclaredCrs);
+        }else {
+            if (geometryDescriptor == null) {
+                throw new RuntimeException("GeometryDescriptor is null");
+            }
+            CoordinateReferenceSystem dataCrs = geometryDescriptor.getType().getCoordinateReferenceSystem();
+            context.setSourceCrs(dataCrs);
+        }
+        return context;
     }
 
     /**

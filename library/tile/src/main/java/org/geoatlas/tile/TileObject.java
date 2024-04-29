@@ -41,6 +41,10 @@ public class TileObject implements Serializable {
         return createCompleteTileObject(request.getLayer(), new long[]{request.getX(), request.getY(), request.getZ()}, request.getSchema(), request.getFormat(), null, blob);
     }
 
+    public static TileObject createCompleteTileObject(TileRequest request, Resource blob, String mimeType) {
+        return createCompleteTileObject(request.getLayer(), new long[]{request.getX(), request.getY(), request.getZ()}, request.getSchema(), mimeType, null, blob);
+    }
+
     public static TileObject createCompleteTileObject(String layerName, long[] xyz, String schema, String format, Map<String, String> parameters, Resource blob) {
         TileObject obj = new TileObject();
         obj.layer_name = layerName;

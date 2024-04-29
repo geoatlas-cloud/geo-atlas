@@ -3,6 +3,7 @@ package org.geoatlas.pyramid;
 import org.geoatlas.tile.TileObject;
 import org.geoatlas.tile.TileRequest;
 import org.geotools.data.simple.SimpleFeatureSource;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 import java.io.IOException;
 
@@ -20,5 +21,5 @@ public interface Pyramid {
      * @return
      * @throws IOException
      */
-    TileObject getTile(TileRequest request, SimpleFeatureSource dataSource) throws IOException;
+    TileObject getTile(TileRequest request, SimpleFeatureSource dataSource, CoordinateReferenceSystem forceDeclaredCrs) throws IOException;
 }

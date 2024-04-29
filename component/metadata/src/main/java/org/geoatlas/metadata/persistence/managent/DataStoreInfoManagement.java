@@ -1,15 +1,20 @@
 package org.geoatlas.metadata.persistence.managent;
 
-import org.geoatlas.metadata.GeoAtlasMetadataContext;
+import org.geoatlas.metadata.context.GeoAtlasMetadataContext;
 import org.geoatlas.metadata.model.DataStoreInfo;
+import org.geoatlas.metadata.model.FeatureLayerInfo;
 import org.geoatlas.metadata.model.NamespaceInfo;
 import org.geoatlas.metadata.persistence.repository.DataStoreInfoRepository;
+import org.geotools.data.DataStore;
+import org.geotools.jdbc.JDBCDataStore;
+import org.geotools.jdbc.VirtualTable;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -88,6 +93,28 @@ public class DataStoreInfoManagement {
             throw new RuntimeException("namespace not found");
         }
         return namespaceInfo;
+    }
+
+    public DataStore getDataStore(String namespace, FeatureLayerInfo featureLayerInfo) {
+        DataStore dataStore = GeoAtlasMetadataContext.getDataStore(namespace);
+        if (dataStore == null) {
+            DataStoreInfo dataStoreInfo = this.getDataStoreInfo(featureLayerInfo.getDatastoreId());
+            if (dataStoreInfo == null) {
+                throw new RuntimeException("DataStoreInfo not found");
+            }
+            dataStoreInfo.setPassword(encryptor.decrypt(dataStoreInfo.getPassword()));
+            dataStore = GeoAtlasMetadataContext.addDataStore(namespace, dataStoreInfo);
+            JDBCDataStore jdbcDataStore = (JDBCDataStore) dataStore;
+            if (!jdbcDataStore.getVirtualTables().containsKey(featureLayerInfo.getView().getName())) {
+                VirtualTable virtualTable = FeatureLayerInfoManagement.getVirtualTable(featureLayerInfo);
+                try {
+                    jdbcDataStore.createVirtualTable(virtualTable);
+                } catch (IOException exception) {
+                    throw new RuntimeException(exception);
+                }
+            }
+        }
+        return dataStore;
     }
 
 }

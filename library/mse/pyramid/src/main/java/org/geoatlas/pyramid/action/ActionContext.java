@@ -20,6 +20,7 @@ public class ActionContext {
     private TileRequest request;
 
     private ReferencedEnvelope tiledBbox;
+
     private ReferencedEnvelope tiledExpandedBbox;
 
     private ReferencedEnvelope dataBbox;
