@@ -1,7 +1,6 @@
 package org.geoatlas.pyramid.action;
 
 import com.google.common.base.Stopwatch;
-import org.checkerframework.checker.units.qual.A;
 import org.geoatlas.io.ByteArrayResource;
 import org.geoatlas.pyramid.action.vector.AbstractReadAction;
 import org.geoatlas.pyramid.action.vector.Pipeline;
@@ -178,7 +177,9 @@ public class ActionPipeline {
         final Pipeline pipeline;
         try {
             PipelineBuilder builder = PipelineBuilder.newBuilder(renderingArea, paintArea, sourceCrs, this.overSamplingFactor, buffer);
-            pipeline = builder.preprocess().transform(this.transformToScreenCoordinates)
+            pipeline = builder
+                    .preprocess()
+                    .transform(this.transformToScreenCoordinates)
                     .clip(this.clipToMapBounds, this.transformToScreenCoordinates)
                     .simplify(this.transformToScreenCoordinates, fsHints, qHints)
                     .collapseCollections().build();

@@ -13,6 +13,9 @@ jasypt:
 
 logging:
   level:
-    'org.geoatlas': DEBUG
-    'org.springframework.data': INFO
-    'org.springframework.jdbc': DEBUG
+    root: INFO
+    org.geoatlas: DEBUG
+    org.geotools.jdbc: DEBUG
+    org.springframework: INFO
+    org.springframework.jdbc: DEBUG
+  config: classpath:logging.properties

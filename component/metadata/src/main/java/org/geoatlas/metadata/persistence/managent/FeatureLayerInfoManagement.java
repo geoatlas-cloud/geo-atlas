@@ -120,14 +120,16 @@ public class FeatureLayerInfoManagement {
     }
 
     private void cacheCoordinateReferenceSystem(FeatureLayerInfo info) {
-        Optional<SpatialReferenceInfo> target = spatialReferenceInfoRepository.findById(info.getSpatialReferenceId());
-        if (target.isPresent()) {
-            SpatialReferenceInfo spatialReferenceInfo = target.get();
-            try {
-                CoordinateReferenceSystem coordinateReferenceSystem = CRS.parseWKT(spatialReferenceInfo.getWktText());
-                GeoAtlasMetadataContext.addCoordinateReferenceSystem(spatialReferenceInfo.getId(), coordinateReferenceSystem);
-            } catch (FactoryException e) {
-                throw new RuntimeException(e);
+        if (info.getSpatialReferenceId() != null) {
+            Optional<SpatialReferenceInfo> target = spatialReferenceInfoRepository.findById(info.getSpatialReferenceId());
+            if (target.isPresent()) {
+                SpatialReferenceInfo spatialReferenceInfo = target.get();
+                try {
+                    CoordinateReferenceSystem coordinateReferenceSystem = CRS.parseWKT(spatialReferenceInfo.getWktText());
+                    GeoAtlasMetadataContext.addCoordinateReferenceSystem(spatialReferenceInfo.getId(), coordinateReferenceSystem);
+                } catch (FactoryException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }

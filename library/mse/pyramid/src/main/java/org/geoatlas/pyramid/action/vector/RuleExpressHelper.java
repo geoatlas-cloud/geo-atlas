@@ -19,6 +19,6 @@ public class RuleExpressHelper {
         if (minLevel == maxLevel) {
             return Stream.of(minLevel).collect(Collectors.toList());
         }
-        return Stream.iterate(minLevel, i -> i + 1).limit(maxLevel).collect(Collectors.toList());
+        return Stream.iterate(minLevel, i -> i + 1).limit(maxLevel - minLevel + 1).collect(Collectors.toList());
     }
 }
