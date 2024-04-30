@@ -90,12 +90,24 @@ public class FeatureLayerInfoManagement {
         return repository.findFirstByNamespaceIdAndName(namespaceId, name);
     }
 
+    /**
+     *
+     * @param info
+     * @return
+     */
     public static VirtualTable getVirtualTable(FeatureLayerInfo info) {
         VirtualViewInfo view = info.getView();
         VirtualTable virtualTable = new VirtualTable(view.getName(), view.getSql());
         List<String> prime = Arrays.asList(view.getPkColumns().split(","));
         virtualTable.setPrimaryKeyColumns(prime);
         Class<? extends Geometry> geoBinding = Geometry.class;
+        /*
+         * 这里的类型会涉及到后续的类型转换, @see org.geotools.jdbc.SQLDialect.convertValue
+         * 如果设置有问题, 那么会导致数据类型转换异常, 错误等
+         * <p>
+         * 那么, 不是很清楚，或者目前Layer存在混合类型的情况下, 直接给Geometry.class
+         *
+         */
         if (view.getGeometryType() == 1) {
             geoBinding = Point.class;
         }else if (view.getGeometryType() == 2) {

@@ -6,11 +6,7 @@ import org.geoatlas.pyramid.Pyramid;
 import org.geoatlas.tile.TileObject;
 import org.geoatlas.tile.TileRequest;
 import org.geoatlas.tile.util.ResponseUtils;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -32,6 +28,7 @@ public class TileEndpoint {
         this.featureSourceHelper = featureSourceHelper;
     }
 
+    @CrossOrigin
     @GetMapping("/{namespace}/{layer}/{schema}/{tileMatrixId}/{tileRow}/{tileCol}.{format}")
     public void getTile(@PathVariable String namespace, @PathVariable String layer, @PathVariable String schema, @PathVariable int tileMatrixId,
                                      @PathVariable int tileRow, @PathVariable int tileCol, @PathVariable String format, HttpServletResponse response) {

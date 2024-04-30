@@ -33,7 +33,8 @@ public class SpatialReferenceInfoManagement {
                 Optional<SpatialReferenceInfo> target = this.repository.findById(spatialReferenceId);
                 if (target.isPresent()) {
                     try {
-                        coordinateReferenceSystem = CRS.parseWKT(target.get().getWktText());
+//                        coordinateReferenceSystem = CRS.parseWKT(target.get().getWktText());
+                        coordinateReferenceSystem = CRS.decode(target.get().getCode(), true);
                     } catch (FactoryException e) {
                         throw new RuntimeException(e);
                     }

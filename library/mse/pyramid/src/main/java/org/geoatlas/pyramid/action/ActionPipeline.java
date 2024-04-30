@@ -46,8 +46,8 @@ public class ActionPipeline {
     private AbstractReadAction readAction;
     private static int DEFAULT_BUFFER_FACTOR = 6;
 
-    private double overSamplingFactor =
-            2.0; // 1=no oversampling, 4=four time oversample (generialization will be 1/4 pixel)
+    // 1=no oversampling, 4=four time oversample (generialization will be 1/4 pixel)
+    private double overSamplingFactor = 2.0;
 
     private boolean transformToScreenCoordinates = true;
 
@@ -178,8 +178,10 @@ public class ActionPipeline {
         final Pipeline pipeline;
         try {
             PipelineBuilder builder = PipelineBuilder.newBuilder(renderingArea, paintArea, sourceCrs, this.overSamplingFactor, buffer);
-            pipeline = builder.preprocess().transform(this.transformToScreenCoordinates).clip(this.clipToMapBounds, this.transformToScreenCoordinates)
-                    .simplify(this.transformToScreenCoordinates, fsHints, qHints).collapseCollections().build();
+            pipeline = builder.preprocess().transform(this.transformToScreenCoordinates)
+                    .clip(this.clipToMapBounds, this.transformToScreenCoordinates)
+                    .simplify(this.transformToScreenCoordinates, fsHints, qHints)
+                    .collapseCollections().build();
         } catch (FactoryException var10) {
             throw new RuntimeException(var10);
         }
