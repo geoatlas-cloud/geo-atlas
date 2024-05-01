@@ -4,7 +4,6 @@ import org.geoatlas.metadata.context.GeoAtlasMetadataContext;
 import org.geoatlas.metadata.model.*;
 import org.geoatlas.metadata.persistence.repository.FeatureLayerInfoRepository;
 import org.geoatlas.metadata.persistence.repository.SpatialReferenceInfoRepository;
-import org.geotools.data.DataStore;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.jdbc.VirtualTable;
 import org.geotools.referencing.CRS;
@@ -16,11 +15,14 @@ import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -98,8 +100,10 @@ public class FeatureLayerInfoManagement {
     public static VirtualTable getVirtualTable(FeatureLayerInfo info) {
         VirtualViewInfo view = info.getView();
         VirtualTable virtualTable = new VirtualTable(view.getName(), view.getSql());
-        List<String> prime = Arrays.asList(view.getPkColumns().split(","));
-        virtualTable.setPrimaryKeyColumns(prime);
+        List<String> prime = Arrays.stream(view.getPkColumns().split(",")).filter(StringUtils::hasText).collect(Collectors.toList());
+        if (!CollectionUtils.isEmpty(prime)) {
+            virtualTable.setPrimaryKeyColumns(prime);
+        }
         Class<? extends Geometry> geoBinding = Geometry.class;
         /*
          * 这里的类型会涉及到后续的类型转换, @see org.geotools.jdbc.SQLDialect.convertValue
