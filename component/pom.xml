@@ -15,6 +15,7 @@
     <modules>
         <module>metadata</module>
         <module>ogc-api</module>
+        <module>tile-cache</module>
     </modules>
 
     <properties>

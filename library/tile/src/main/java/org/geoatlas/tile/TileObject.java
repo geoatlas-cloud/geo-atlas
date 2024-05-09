@@ -13,6 +13,16 @@ import java.util.Map;
  **/
 public class TileObject implements Serializable {
 
+    public static enum Status {
+        UNSET,
+        HIT,
+        MISS,
+        LOCK,
+        EXPIRED_LOCK
+    };
+
+    Status status = Status.UNSET;
+
     Resource blob;
     String parameters_id = null;
     long[] xyz;
@@ -23,6 +33,8 @@ public class TileObject implements Serializable {
     long created;
 
     private String format;
+
+    int blob_size;
 
     private TileObject() {
     }
@@ -52,12 +64,23 @@ public class TileObject implements Serializable {
         obj.schema = schema;
         obj.format = format;
         obj.parameters = parameters;
-        if (blob != null) {
+
+        if (blob == null) {
+            obj.blob_size = -1;
+        } else {
+            obj.blob_size = (int) blob.getSize();
             obj.blob = blob;
         }
-
         obj.created = System.currentTimeMillis();
         return obj;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     public Resource getBlob() {
@@ -102,6 +125,19 @@ public class TileObject implements Serializable {
 
     public long getCreated() {
         return created;
+    }
+
+    /** The time that the stored resource was created/modified */
+    public void setCreated(long created) {
+        this.created = created;
+    }
+
+    public int getBlobSize() {
+        return blob_size;
+    }
+
+    public void setBlobSize(int blob_size) {
+        this.blob_size = blob_size;
     }
 
     public String toString() {
