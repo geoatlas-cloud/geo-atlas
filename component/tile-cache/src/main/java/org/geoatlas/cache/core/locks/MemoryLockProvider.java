@@ -12,7 +12,7 @@
  *
  * <p>Copyright 2019
  */
-package org.geoatlas.cache.core.storage.locks;
+package org.geoatlas.cache.core.locks;
 
 import org.geotools.util.logging.Logging;
 

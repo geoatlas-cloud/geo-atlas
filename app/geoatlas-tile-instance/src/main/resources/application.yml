@@ -11,6 +11,18 @@ jasypt:
   encryptor:
     password: ${JASYPT_ENCRYPTOR_PASSWORD:geo-atlas@fuyi}
 
+geo-atlas:
+  cache:
+    enabled: true
+    inner-caching-enabled: false
+    persistence-enabled: true # 默认是file-system
+    inner:
+      storage:
+        eviction-policy: EXPIRE_AFTER_ACCESS
+#    persistence:
+#      storage:
+#        base-directory: /tmp/geo-atlas-cache
+
 logging:
   level:
     root: INFO

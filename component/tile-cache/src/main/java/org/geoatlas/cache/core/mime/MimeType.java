@@ -121,7 +121,20 @@ public class MimeType {
         if (formatStr == null) {
             throw new MimeException("formatStr was not set");
         }
-        MimeType mimeType = ImageMime.checkForFormat(formatStr);
+
+        // 优先检查 Extension
+        MimeType mimeType = ApplicationMime.checkForExtension(formatStr);
+        if (mimeType != null) {
+            return mimeType;
+        }
+
+        // applicationMine 检查两次
+        mimeType = ApplicationMime.checkForFormat(formatStr);
+        if (mimeType != null) {
+            return mimeType;
+        }
+
+        mimeType = ImageMime.checkForFormat(formatStr);
         if (mimeType != null) {
             return mimeType;
         }
@@ -131,11 +144,6 @@ public class MimeType {
         }
 
         mimeType = TextMime.checkForFormat(formatStr);
-        if (mimeType != null) {
-            return mimeType;
-        }
-
-        mimeType = ApplicationMime.checkForFormat(formatStr);
         if (mimeType != null) {
             return mimeType;
         }

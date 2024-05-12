@@ -16,7 +16,7 @@ package org.geoatlas.cache.core.config;
 
 import org.geoatlas.cache.core.storage.BlobStore;
 import org.geoatlas.cache.core.storage.StorageException;
-import org.geoatlas.cache.core.storage.locks.LockProvider;
+import org.geoatlas.cache.core.locks.LockProvider;
 
 import java.io.Serializable;
 

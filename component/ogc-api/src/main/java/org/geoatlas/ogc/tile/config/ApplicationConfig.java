@@ -1,5 +1,6 @@
 package org.geoatlas.ogc.tile.config;
 
+import org.geoatlas.cache.core.config.EnableTileCache;
 import org.geoatlas.pyramid.ClassicPyramid;
 import org.geoatlas.pyramid.Pyramid;
 import org.geoatlas.pyramid.RuleBasedPyramid;
@@ -16,6 +17,7 @@ import java.util.List;
  * @time: 2024/4/28 15:22
  * @since: 1.0
  **/
+@EnableTileCache
 @Configuration
 public class ApplicationConfig {
 
@@ -36,13 +38,26 @@ public class ApplicationConfig {
         return new RuleBasedPyramid(rules);
     }
 
-    @Bean
+//    @Bean
     public Pyramid buildRuledSL_FlowpipePyramid() {
         List<RuleExpression> rules = new ArrayList<>();
         rules.add(RuleExpressHelper.buildRule(0,7, "1!=1"));
         rules.add(RuleExpressHelper.buildRule(8,13, "caliber>=600"));
         rules.add(RuleExpressHelper.buildRule(14,15, "caliber>=400"));
         rules.add(RuleExpressHelper.buildRule(16,16, "caliber>=100"));
+        return new RuleBasedPyramid(rules);
+    }
+
+    @Bean
+    public Pyramid buildRuledOSMLinesPyramid() {
+        List<RuleExpression> rules = new ArrayList<>();
+        rules.add(RuleExpressHelper.buildRule(0,5, "EXCLUDE"));
+        rules.add(RuleExpressHelper.buildRule(6,6, "highway='motorway'"));
+        rules.add(RuleExpressHelper.buildRule(7,8, "highway='motorway' or highway='trunk'"));
+        rules.add(RuleExpressHelper.buildRule(9,9, "highway='motorway' or highway='trunk' or highway='primary'"));
+        rules.add(RuleExpressHelper.buildRule(10,12, "highway='motorway' or highway='trunk' or highway='primary' or highway='secondary'"));
+        rules.add(RuleExpressHelper.buildRule(13,24, "highway='motorway' or highway='trunk' or highway='primary' or highway='secondary' " +
+                "or highway='motorway_link' or highway='trunk_link' or highway='primary_link_link' or highway='secondary_link' "));
         return new RuleBasedPyramid(rules);
     }
 }

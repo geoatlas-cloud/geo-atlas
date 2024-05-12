@@ -15,7 +15,7 @@
 package org.geoatlas.cache.core.config;
 
 import org.geoatlas.cache.core.config.meta.ServiceInformation;
-import org.geoatlas.cache.core.storage.locks.LockProvider;
+import org.geoatlas.cache.core.locks.LockProvider;
 
 import java.io.IOException;
 

@@ -75,5 +75,11 @@
             <artifactId>tile</artifactId>
             <version>${revision}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.geo-atlas.library</groupId>
+            <artifactId>pyramid</artifactId>
+            <version>${revision}</version>
+        </dependency>
     </dependencies>
 </project>

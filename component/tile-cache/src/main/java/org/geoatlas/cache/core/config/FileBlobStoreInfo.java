@@ -19,7 +19,7 @@ import org.geoatlas.cache.core.storage.StorageException;
 import org.geoatlas.cache.core.storage.blobstore.file.DefaultFilePathGenerator;
 import org.geoatlas.cache.core.storage.blobstore.file.FileBlobStore;
 import org.geoatlas.cache.core.storage.blobstore.file.XYZFilePathGenerator;
-import org.geoatlas.cache.core.storage.locks.LockProvider;
+import org.geoatlas.cache.core.locks.LockProvider;
 
 import static com.google.common.base.Preconditions.checkState;
 

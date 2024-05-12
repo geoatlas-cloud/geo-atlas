@@ -12,22 +12,13 @@
  *
  * <p>Copyright 2019
  */
-package org.geoatlas.cache.core.storage.locks;
+package org.geoatlas.pyramid.index;
 
-import org.geoatlas.cache.core.GeoAtlasCacheException;
+public abstract class MatrixMismatchException extends GeoAtlasPyramidException {
 
-/**
- * Generic abstraction for getting/releasing exclusive locks
- *
- * @author Andrea Aime - GeoSolutions
- */
-public interface LockProvider {
+    private static final long serialVersionUID = 6759777966651110183L;
 
-    /** Acquires a exclusive lock on the specified key */
-    public Lock getLock(String lockKey) throws GeoAtlasCacheException;
-
-    public interface Lock {
-        /** Releases the lock on the specified key */
-        public void release() throws GeoAtlasCacheException;
+    public MatrixMismatchException(String msg) {
+        super(msg);
     }
 }

@@ -10,24 +10,22 @@
  * <p>You should have received a copy of the GNU Lesser General Public License along with this
  * program. If not, see <http://www.gnu.org/licenses/>.
  *
- * <p>Copyright 2019
+ * @author Arne Kepp, Copyright 2010
  */
-package org.geoatlas.cache.core.storage.locks;
+package org.geoatlas.pyramid.index;
 
-import org.geoatlas.cache.core.GeoAtlasCacheException;
+public class TileDimensionsMismatchException extends MatrixMismatchException {
 
-/**
- * A no-op implementation of LockProvider. It does not actually lock anything, can be used to test
- * if the other subsystems continue to work properly in face of absence of locks
- *
- * @author Andrea Aime - GeoSolutions
- */
-public class NoOpLockProvider implements LockProvider {
-
-    @Override
-    public LockProvider.Lock getLock(String lockKey) throws GeoAtlasCacheException {
-        return () -> {
-            // nothing to do
-        };
+    public TileDimensionsMismatchException(int height, int width, int gsHeight, int gsWidth) {
+        super(
+                "The requested tile dimensions "
+                        + width
+                        + "x"
+                        + height
+                        + " do not match those of the grid set ("
+                        + gsWidth
+                        + "x"
+                        + gsHeight
+                        + ")");
     }
 }

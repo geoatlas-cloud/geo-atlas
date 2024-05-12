@@ -21,7 +21,7 @@ import org.geoatlas.cache.core.GeoAtlasCacheException;
 import org.geoatlas.cache.core.GeoAtlasCacheExtensions;
 import org.geoatlas.cache.core.config.*;
 import org.geoatlas.cache.core.storage.blobstore.file.FileBlobStore;
-import org.geoatlas.cache.core.storage.locks.LockProvider;
+import org.geoatlas.cache.core.locks.LockProvider;
 import org.geoatlas.tile.TileObject;
 import org.geotools.util.logging.Logging;
 

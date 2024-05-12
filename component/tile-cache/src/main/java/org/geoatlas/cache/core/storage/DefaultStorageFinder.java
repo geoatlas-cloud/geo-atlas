@@ -18,6 +18,7 @@ import org.geoatlas.cache.core.config.ConfigurationException;
 import org.geoatlas.cache.core.util.ApplicationContextProvider;
 import org.geoatlas.cache.core.util.GWCVars;
 import org.geotools.util.logging.Logging;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.File;
@@ -52,8 +53,8 @@ public class DefaultStorageFinder {
 
     private WebApplicationContext context = null;
 
-    public DefaultStorageFinder(ApplicationContextProvider provider) {
-        context = provider.getApplicationContext();
+    public DefaultStorageFinder(ApplicationContext context) {
+        context = context;
     }
 
     public synchronized String getDefaultPath() throws ConfigurationException {

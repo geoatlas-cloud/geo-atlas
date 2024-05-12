@@ -67,6 +67,174 @@ public class TileMatrixSet implements Description{
         return tileBounds;
     }
 
+    /**
+     * Finds the spatial bounding box of a rectangular group of tiles.
+     *
+     * @param rectangleExtent the rectangle of tiles. {minx, miny, maxx, maxy} in tile coordinates
+     * @return the spatial bounding box in the coordinates of the SRS used by the GridSet
+     */
+    protected BoundingBox boundsFromRectangle(long[] rectangleExtent) {
+        TileMatrix grid = getMatrix((int) rectangleExtent[4]);
+
+        double width = grid.getResolution() * grid.getTileWidth();
+        double height = grid.getResolution() * grid.getTileHeight();
+
+        long bottomY = rectangleExtent[1];
+        long topY = rectangleExtent[3];
+
+        // 此处假定传递的瓦片坐标属于google体系的瓦片坐标系，即原点在左上角
+        if (CornerOfOrigin.TOP_LEFT.equals(this.cornerOfOrigin)) {
+            bottomY = bottomY - grid.getMatrixHeight();
+            topY = topY - grid.getMatrixHeight();
+        }
+
+        double[] tileOrigin = tileOrigin();
+        double minx = tileOrigin[0] + width * rectangleExtent[0];
+        double miny = tileOrigin[1] + height * (bottomY);
+        double maxx = tileOrigin[0] + width * (rectangleExtent[2] + 1);
+        double maxy = tileOrigin[1] + height * (topY + 1);
+        BoundingBox rectangleBounds = new BoundingBox(minx, miny, maxx, maxy);
+
+        return rectangleBounds;
+    }
+
+    protected long[] closestIndex(BoundingBox tileBounds) throws MatrixMismatchException {
+        double bestError = Double.MAX_VALUE;
+        int bestLevel = -1;
+        double bestResolution = -1.0;
+
+        for (int i = 0; i < getNumLevels(); i++) {
+            TileMatrix grid = getMatrix(i);
+//            double wRes = tileBounds.getWidth() / getTileWidth();
+            double wRes = tileBounds.getWidth() / grid.getTileWidth();
+            if (Math.abs(wRes - bestResolution) > (0.1 * wRes)) {
+                throw new ResolutionMismatchException(wRes, bestResolution);
+            }
+
+            double error = Math.abs(wRes - grid.getResolution());
+
+            if (error < bestError) {
+                bestError = error;
+                bestResolution = grid.getResolution();
+                bestLevel = i;
+            } else {
+                break;
+            }
+        }
+
+        return closestIndex(bestLevel, tileBounds);
+    }
+
+    protected long[] closestIndex(int level, BoundingBox tileBounds)
+            throws MatrixAlignmentMismatchException {
+        TileMatrix grid = getMatrix(level);
+
+        double width = grid.getResolution() * grid.getTileWidth();
+        double height = grid.getResolution() * grid.getTileHeight();
+
+        double x = (tileBounds.getMinX() - tileOrigin()[0]) / width;
+
+        double y = (tileBounds.getMinY() - tileOrigin()[1]) / height;
+
+        long posX = Math.round(x);
+
+        long posY = Math.round(y);
+
+        if (Math.abs(x - posX) > 0.1 || Math.abs(y - posY) > 0.1) {
+            throw new MatrixAlignmentMismatchException(x, posX, y, posY);
+        }
+
+        if (CornerOfOrigin.TOP_LEFT.equals(this.cornerOfOrigin)) {
+//            posY = posY + grid.getNumTilesHigh();
+            posY = posY + grid.getMatrixHeight();
+        }
+
+        long[] ret = {posX, posY, level};
+
+        return ret;
+    }
+
+
+    public long[] closestRectangle(BoundingBox rectangleBounds) {
+        double rectWidth = rectangleBounds.getWidth();
+        double rectHeight = rectangleBounds.getHeight();
+
+        double bestError = Double.MAX_VALUE;
+        int bestLevel = -1;
+
+        // Now we loop over the resolutions until
+        for (int i = 0; i < getNumLevels(); i++) {
+            TileMatrix grid = getMatrix(i);
+
+            double countX = rectWidth / (grid.getResolution() * grid.getTileWidth());
+            double countY = rectHeight / (grid.getResolution() * grid.getTileHeight());
+
+            double error =
+                    Math.abs(countX - Math.round(countX)) + Math.abs(countY - Math.round(countY));
+
+            if (error < bestError) {
+                bestError = error;
+                bestLevel = i;
+            } else if (error >= bestError) {
+                break;
+            }
+        }
+
+        return closestRectangle(bestLevel, rectangleBounds);
+    }
+
+    /**
+     * Find the rectangle of tiles that most closely covers the given rectangle
+     *
+     * @param level integer zoom level to consider tiles at
+     * @param rectangeBounds rectangle to match
+     * @return Array of long, the rectangle of tiles in tile coordinates: {minx, miny, maxx, maxy,
+     *     level}
+     */
+    protected long[] closestRectangle(int level, BoundingBox rectangeBounds) {
+        TileMatrix grid = getMatrix(level);
+
+        double width = grid.getResolution() * grid.getTileWidth();
+        double height = grid.getResolution() * grid.getTileHeight();
+
+        long minX = (long) Math.floor((rectangeBounds.getMinX() - tileOrigin()[0]) / width);
+        long minY = (long) Math.floor((rectangeBounds.getMinY() - tileOrigin()[1]) / height);
+        long maxX = (long) Math.ceil(((rectangeBounds.getMaxX() - tileOrigin()[0]) / width));
+        long maxY = (long) Math.ceil(((rectangeBounds.getMaxY() - tileOrigin()[1]) / height));
+
+        if (CornerOfOrigin.TOP_LEFT.equals(this.cornerOfOrigin)) {
+//            minY = minY + grid.getNumTilesHigh();
+            minY = minY + grid.getMatrixHeight();
+//            maxY = maxY + grid.getNumTilesHigh();
+            maxY = maxY + grid.getMatrixHeight();
+        }
+
+        // We substract one, since that's the tile at that position
+        long[] ret = {minX, minY, maxX - 1, maxY - 1, level};
+
+        return ret;
+    }
+
+    public BoundingBox getBounds() {
+        int i;
+        long tilesWide, tilesHigh;
+
+        for (i = (getNumLevels() - 1); i > 0; i--) {
+            tilesWide = getMatrix(i).getMatrixWidth();
+            tilesHigh = getMatrix(i).getMatrixHeight();
+
+            if (tilesWide == 1 && tilesHigh == 0) {
+                break;
+            }
+        }
+
+        tilesWide = getMatrix(i).getMatrixWidth();
+        tilesHigh = getMatrix(i).getMatrixHeight();
+        long[] ret = {0, 0, tilesWide - 1, tilesHigh - 1, i};
+
+        return boundsFromRectangle(ret);
+    }
+
     @Override
     public String getTitle() {
         return title;

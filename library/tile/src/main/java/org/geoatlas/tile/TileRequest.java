@@ -39,6 +39,10 @@ public class TileRequest {
         this.format = format;
     }
 
+    public boolean isValid() {
+        return namespace != null && layer != null && schema != null && x >= 0 && y >= 0 && z >= 0;
+    }
+
     public String getNamespace() {
         return namespace;
     }
