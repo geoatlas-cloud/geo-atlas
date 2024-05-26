@@ -56,8 +56,10 @@ public class ApplicationConfig {
         rules.add(RuleExpressHelper.buildRule(7,8, "highway='motorway' or highway='trunk'"));
         rules.add(RuleExpressHelper.buildRule(9,9, "highway='motorway' or highway='trunk' or highway='primary'"));
         rules.add(RuleExpressHelper.buildRule(10,12, "highway='motorway' or highway='trunk' or highway='primary' or highway='secondary'"));
-        rules.add(RuleExpressHelper.buildRule(13,24, "highway='motorway' or highway='trunk' or highway='primary' or highway='secondary' " +
-                "or highway='motorway_link' or highway='trunk_link' or highway='primary_link_link' or highway='secondary_link' "));
+        rules.add(RuleExpressHelper.buildRule(13,15, "highway='motorway' or highway='trunk' or highway='primary' or highway='secondary' or highway='tertiary' " +
+                "or highway='motorway_link' or highway='trunk_link' or highway='primary_link_link' or highway='secondary_link' or highway='tertiary_link'"));
+        rules.add(RuleExpressHelper.buildRule(16,24, "highway='motorway' or highway='trunk' or highway='primary' or highway='secondary' or highway='tertiary' or highway='unclassified' or highway='residential' or highway='service' " +
+                "or highway='motorway_link' or highway='trunk_link' or highway='primary_link_link' or highway='secondary_link' or highway='tertiary_link' or (railway is not null)"));
         return new RuleBasedPyramid(rules);
     }
 }

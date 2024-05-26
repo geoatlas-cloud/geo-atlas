@@ -1,5 +1,6 @@
 package org.geoatlas.metadata.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -8,7 +9,8 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.time.Instant;
+import java.sql.Timestamp;
+import java.util.Objects;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -50,11 +52,13 @@ public class VirtualViewInfo {
     @Column("feature_layer_id")
     private Long featureLayerId;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @CreatedDate
-    private Instant created;
+    private Timestamp created;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @LastModifiedDate
-    private Instant modified;
+    private Timestamp modified;
 
     public VirtualViewInfo() {
     }
@@ -123,19 +127,32 @@ public class VirtualViewInfo {
         this.featureLayerId = featureLayerId;
     }
 
-    public Instant getCreated() {
+    public Timestamp getCreated() {
         return created;
     }
 
-    public void setCreated(Instant created) {
+    public void setCreated(Timestamp created) {
         this.created = created;
     }
 
-    public Instant getModified() {
+    public Timestamp getModified() {
         return modified;
     }
 
-    public void setModified(Instant modified) {
+    public void setModified(Timestamp modified) {
         this.modified = modified;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VirtualViewInfo that = (VirtualViewInfo) o;
+        return geometryType == that.geometryType && srid == that.srid && Objects.equals(name, that.name) && Objects.equals(sql, that.sql) && Objects.equals(pkColumns, that.pkColumns) && Objects.equals(geometryColumn, that.geometryColumn) && Objects.equals(featureLayerId, that.featureLayerId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name, sql, pkColumns, geometryColumn, geometryType, srid, featureLayerId);
     }
 }

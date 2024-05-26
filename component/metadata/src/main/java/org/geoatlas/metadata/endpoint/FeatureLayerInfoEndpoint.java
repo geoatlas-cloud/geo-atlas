@@ -2,6 +2,8 @@ package org.geoatlas.metadata.endpoint;
 
 import org.geoatlas.metadata.model.FeatureLayerInfo;
 import org.geoatlas.metadata.persistence.managent.FeatureLayerInfoManagement;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
  * @since: 1.0
  **/
 @RestController
-@RequestMapping("/metadata/feature_layers")
+@RequestMapping("/v1/metadata/feature_layers")
 public class FeatureLayerInfoEndpoint {
 
     private final FeatureLayerInfoManagement management;
@@ -39,5 +41,19 @@ public class FeatureLayerInfoEndpoint {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(featureLayerInfo);
+    }
+
+    @PutMapping
+    public ResponseEntity<?> updateFeatureLayerInfo(@RequestBody FeatureLayerInfo info) {
+        management.updateFeatureLayerInfo(info);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/page")
+    public ResponseEntity<?> pageFeatureLayerInfo(@RequestParam(defaultValue = "0") int page,
+                                               @RequestParam(defaultValue = "6") int size,
+                                               @RequestParam(required = false) String name) {
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by("modified", "created").descending());
+        return ResponseEntity.ok(management.pageFeatureLayerInfo(name, pageRequest));
     }
 }

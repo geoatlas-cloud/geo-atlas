@@ -131,7 +131,7 @@ public class GeoAtlasCachePyramidAdapter {
                     saveTiles(target, tile, requestTime);
                 }catch (Exception e) {
                     Throwables.throwIfInstanceOf(e, GeoAtlasCacheException.class);
-                    throw new GeoAtlasCacheException("Problem communicating with GeoServer", e);
+                    throw new GeoAtlasCacheException("Problem communicating with GeoAtlas TileAPI", e);
                 }
             }
         } finally {

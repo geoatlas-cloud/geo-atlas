@@ -1,5 +1,6 @@
 package org.geoatlas.metadata.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -7,7 +8,7 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import javax.validation.constraints.NotNull;
-import java.time.Instant;
+import java.sql.Timestamp;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -39,11 +40,13 @@ public class SpatialReferenceInfo {
 
     private String description;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @CreatedDate
-    private Instant created;
+    private Timestamp created;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @LastModifiedDate
-    private Instant modified;
+    private Timestamp modified;
 
     private static final String EPSG_PREFIX = "EPSG:";
 
@@ -120,19 +123,19 @@ public class SpatialReferenceInfo {
         this.description = description;
     }
 
-    public Instant getCreated() {
+    public Timestamp getCreated() {
         return created;
     }
 
-    public void setCreated(Instant created) {
+    public void setCreated(Timestamp created) {
         this.created = created;
     }
 
-    public Instant getModified() {
+    public Timestamp getModified() {
         return modified;
     }
 
-    public void setModified(Instant modified) {
+    public void setModified(Timestamp modified) {
         this.modified = modified;
     }
 }

@@ -51,7 +51,7 @@ public class FeatureSourceHelper {
         CoordinateReferenceSystem coordinateReferenceSystem = this.spatialReferenceInfoManagement.getCoordinateReferenceSystem(featureLayerInfo.getSpatialReferenceId());
 
         // read datastore
-        DataStore dataStore = this.dataStoreInfoManagement.getDataStore(namespace, featureLayerInfo);
+        DataStore dataStore = this.dataStoreInfoManagement.getDataStore(featureLayerInfo);
 
         try {
             // FIXME: 2024/4/28 考虑统一都是用LayerName?不用这个复杂?

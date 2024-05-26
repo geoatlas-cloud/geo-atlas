@@ -30,11 +30,12 @@ public class RuleBasedReadAction extends AbstractReadAction {
         if (rule == null){
             return super.buildQuery(request, bbox, geometryPropertyName);
         }
-        Filter ruledFilter;
+        Filter ruledFilter = null;
         try {
             ruledFilter = CQL.toFilter(rule.getFilter());
         } catch (CQLException e) {
-            throw new RuntimeException(e);
+//            throw new RuntimeException(e);
+            log.error(e.getMessage(), e);
         }
         if (ruledFilter == null){
             return super.buildQuery(request, bbox, geometryPropertyName);

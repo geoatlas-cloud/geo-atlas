@@ -5,11 +5,13 @@ import org.geoatlas.metadata.model.DataStoreInfo;
 import org.geoatlas.metadata.model.FeatureLayerInfo;
 import org.geoatlas.metadata.model.NamespaceInfo;
 import org.geoatlas.metadata.persistence.repository.DataStoreInfoRepository;
+import org.geoatlas.metadata.response.PageContent;
 import org.geotools.data.DataStore;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.jdbc.VirtualTable;
 import org.jasypt.encryption.pbe.PBEStringEncryptor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -43,15 +45,10 @@ public class DataStoreInfoManagement {
     @Transactional
     public void addDataStoreInfo(DataStoreInfo info) {
         NamespaceInfo namespaceInfo = namespaceCheck(info);
-        // 先删除后新增, 保证一个Namespace下只有一个Datastore
-        List<DataStoreInfo> badData = repository.findDataStoreInfoByNamespaceId(namespaceInfo.getId());
-        if (!CollectionUtils.isEmpty(badData)) {
-            repository.deleteAllById(badData.stream().map(DataStoreInfo::getId).collect(Collectors.toList()));
-        }
         info.setPassword(encryptor.encrypt(info.getPassword()));
         DataStoreInfo saved = repository.save(info);
         saved.setPassword(encryptor.decrypt(saved.getPassword()));
-        GeoAtlasMetadataContext.addDataStore(namespaceInfo.getName(), saved);
+        GeoAtlasMetadataContext.addDataStore(saved);
     }
 
     @Transactional
@@ -64,8 +61,8 @@ public class DataStoreInfoManagement {
             info.setPassword(encryptor.encrypt(info.getPassword()));
             DataStoreInfo saved = repository.save(info);
             saved.setPassword(encryptor.decrypt(saved.getPassword()));
-            GeoAtlasMetadataContext.removeDataStore(namespaceInfo.getName());
-            GeoAtlasMetadataContext.addDataStore(namespaceInfo.getName(), saved);
+            GeoAtlasMetadataContext.removeDataStore(saved.getId());
+            GeoAtlasMetadataContext.addDataStore(saved);
         }
     }
 
@@ -74,7 +71,7 @@ public class DataStoreInfoManagement {
         if(target.isPresent()) {
             NamespaceInfo namespaceInfo = namespaceCheck(target.get());
             repository.deleteById(id);
-            GeoAtlasMetadataContext.removeDataStore(namespaceInfo.getName());
+            GeoAtlasMetadataContext.removeDataStore(id);
         }
     }
 
@@ -83,8 +80,30 @@ public class DataStoreInfoManagement {
      * @param id
      * @return
      */
-    public DataStoreInfo getDataStoreInfo(Long id) {
-        return repository.findById(id).orElse(null);
+    public DataStoreInfo getDataStoreInfo(Long id, boolean decrypt) {
+        DataStoreInfo storeInfo = repository.findById(id).orElse(null);
+        if (null != storeInfo) {
+            if (decrypt){
+                // FIXME: 2024/5/24 当前仅是为了方便操作, 目前将对密码做明文传输
+                storeInfo.setPassword(encryptor.decrypt(storeInfo.getPassword()));
+            }
+        }
+        return storeInfo;
+    }
+
+    public long getTotalCount() {
+        return this.repository.count();
+    }
+
+    public PageContent<DataStoreInfo> pageDatastoreInfo(String name, PageRequest request) {
+        if (name != null){
+            return new PageContent<>(repository.findAllByNameContaining(name, request));
+        }
+        return new PageContent<>(repository.findAll(request));
+    }
+
+    public List<DataStoreInfo> list(){
+        return repository.findAll();
     }
 
     private NamespaceInfo namespaceCheck(DataStoreInfo info){
@@ -95,23 +114,27 @@ public class DataStoreInfoManagement {
         return namespaceInfo;
     }
 
-    public DataStore getDataStore(String namespace, FeatureLayerInfo featureLayerInfo) {
-        DataStore dataStore = GeoAtlasMetadataContext.getDataStore(namespace);
+    public DataStore getDataStore(FeatureLayerInfo featureLayerInfo) {
+        Long datastoreId = featureLayerInfo.getDatastoreId();
+        DataStore dataStore = GeoAtlasMetadataContext.getDataStore(datastoreId);
         if (dataStore == null) {
-            DataStoreInfo dataStoreInfo = this.getDataStoreInfo(featureLayerInfo.getDatastoreId());
+            DataStoreInfo dataStoreInfo = this.getDataStoreInfo(datastoreId, false);
             if (dataStoreInfo == null) {
                 throw new RuntimeException("DataStoreInfo not found");
             }
             dataStoreInfo.setPassword(encryptor.decrypt(dataStoreInfo.getPassword()));
-            dataStore = GeoAtlasMetadataContext.addDataStore(namespace, dataStoreInfo);
-            JDBCDataStore jdbcDataStore = (JDBCDataStore) dataStore;
-            if (!jdbcDataStore.getVirtualTables().containsKey(featureLayerInfo.getView().getName())) {
-                VirtualTable virtualTable = FeatureLayerInfoManagement.getVirtualTable(featureLayerInfo);
-                try {
-                    jdbcDataStore.createVirtualTable(virtualTable);
-                } catch (IOException exception) {
-                    throw new RuntimeException(exception);
-                }
+            dataStore = GeoAtlasMetadataContext.addDataStore(dataStoreInfo);
+        }
+        if (dataStore == null) {
+            throw new RuntimeException("DataStore not found");
+        }
+        JDBCDataStore jdbcDataStore = (JDBCDataStore) dataStore;
+        if (!jdbcDataStore.getVirtualTables().containsKey(featureLayerInfo.getView().getName())) {
+            VirtualTable virtualTable = FeatureLayerInfoManagement.getVirtualTable(featureLayerInfo);
+            try {
+                jdbcDataStore.createVirtualTable(virtualTable);
+            } catch (IOException exception) {
+                throw new RuntimeException(exception);
             }
         }
         return dataStore;

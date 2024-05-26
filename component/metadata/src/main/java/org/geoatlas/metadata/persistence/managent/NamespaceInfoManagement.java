@@ -2,9 +2,13 @@ package org.geoatlas.metadata.persistence.managent;
 
 import org.geoatlas.metadata.model.NamespaceInfo;
 import org.geoatlas.metadata.persistence.repository.NamespaceInfoRepository;
+import org.geoatlas.metadata.response.PageContent;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -51,5 +55,20 @@ public class NamespaceInfoManagement {
 
     public NamespaceInfo getNamespaceInfo(Long id) {
         return repository.findById(id).orElse(null);
+    }
+
+    public long getTotalCount() {
+        return this.repository.count();
+    }
+
+    public PageContent<NamespaceInfo> pageNamespaceInfo(String name, PageRequest request) {
+        if (name != null){
+            return new PageContent<>(repository.findAllByNameContaining(name, request));
+        }
+        return new PageContent<>(repository.findAll(request));
+    }
+
+    public List<NamespaceInfo> list() {
+        return repository.findAll();
     }
 }

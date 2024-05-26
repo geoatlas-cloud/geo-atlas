@@ -4,6 +4,8 @@ import org.geoatlas.metadata.context.GeoAtlasMetadataContext;
 import org.geoatlas.metadata.model.*;
 import org.geoatlas.metadata.persistence.repository.FeatureLayerInfoRepository;
 import org.geoatlas.metadata.persistence.repository.SpatialReferenceInfoRepository;
+import org.geoatlas.metadata.response.FeatureLayerInfoResponse;
+import org.geoatlas.metadata.response.PageContent;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.jdbc.VirtualTable;
 import org.geotools.referencing.CRS;
@@ -11,8 +13,12 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
+import org.modelmapper.ModelMapper;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -36,18 +42,22 @@ public class FeatureLayerInfoManagement {
 
     private final NamespaceInfoManagement namespaceInfoManagement;
 
-    private final SpatialReferenceInfoRepository spatialReferenceInfoRepository;
-
     private final DataStoreInfoManagement dataStoreInfoManagement;
+
+    private final SpatialReferenceInfoManagement spatialReferenceInfoManagement;
+
+    private final ModelMapper mapper;
 
     public FeatureLayerInfoManagement(FeatureLayerInfoRepository repository,
                                       NamespaceInfoManagement namespaceInfoManagement,
-                                      SpatialReferenceInfoRepository spatialReferenceInfoRepository,
-                                      DataStoreInfoManagement dataStoreInfoManagement) {
+                                      DataStoreInfoManagement dataStoreInfoManagement,
+                                      SpatialReferenceInfoManagement spatialReferenceInfoManagement,
+                                      ModelMapper modelMapper) {
         this.repository = repository;
         this.namespaceInfoManagement = namespaceInfoManagement;
-        this.spatialReferenceInfoRepository = spatialReferenceInfoRepository;
         this.dataStoreInfoManagement = dataStoreInfoManagement;
+        this.spatialReferenceInfoManagement = spatialReferenceInfoManagement;
+        this.mapper = modelMapper;
     }
 
     @Transactional
@@ -60,7 +70,7 @@ public class FeatureLayerInfoManagement {
         if (repository.existsByNamespaceIdAndName(info.getNamespaceId(), info.getName())) {
             throw new RuntimeException("feature layer already exists");
         }
-        JDBCDataStore dataStore = (JDBCDataStore) this.dataStoreInfoManagement.getDataStore(namespaceInfo.getName(), info);
+        JDBCDataStore dataStore = (JDBCDataStore) this.dataStoreInfoManagement.getDataStore(info);
         VirtualTable virtualTable = getVirtualTable(info);
         try {
             dataStore.createVirtualTable(virtualTable);
@@ -72,6 +82,44 @@ public class FeatureLayerInfoManagement {
         cacheCoordinateReferenceSystem(saved);
     }
 
+    @Transactional
+    public void updateFeatureLayerInfo(FeatureLayerInfo info) {
+        Optional<FeatureLayerInfo> old = repository.findById(info.getId());
+        if (old.isPresent()){
+            NamespaceInfo namespaceInfo = namespaceInfoManagement.getNamespaceInfo(info.getNamespaceId());
+            if (namespaceInfo == null){
+                throw new RuntimeException("namespace not found");
+            }
+
+            FeatureLayerInfo last = old.get();
+            handleMutations(last, info);
+            mapper.map(info, last);
+            repository.save(last);
+        }else {
+            throw new RuntimeException("feature layer not found");
+        }
+    }
+
+    /**
+     * 突变内容处理
+     * @param last
+     * @param current
+     */
+    private void handleMutations(FeatureLayerInfo last, FeatureLayerInfo current) {
+        if (!last.getName().equals(current.getName())) {
+            if (repository.existsByNamespaceIdAndName(current.getNamespaceId(), current.getName())) {
+                throw new RuntimeException("feature layer already exists");
+            }
+        }
+        
+        if (last.getSpatialReferenceId() != current.getSpatialReferenceId()) {
+            // FIXME: 2024/5/25 移除旧的CRS
+            cacheCoordinateReferenceSystem(current);
+        }
+
+        // FIXME: 2024/5/26 build event and push, 可能需要外部系统自行处理缓存等问题
+    }
+
     public void removeFeatureLayerInfo(Long id) {
         Optional<FeatureLayerInfo> target = repository.findById(id);
         if (target.isPresent()){
@@ -80,6 +128,7 @@ public class FeatureLayerInfoManagement {
             if (namespaceInfo != null) {
                 repository.deleteById(id);
                 GeoAtlasMetadataContext.removeFeatureLayerInfo(namespaceInfo.getName(), featureLayerInfo.getName());
+                // FIXME: 2024/5/25 还应该同步移除Datastore中的virtualView实例
             }
         }
     }
@@ -92,6 +141,50 @@ public class FeatureLayerInfoManagement {
         return repository.findFirstByNamespaceIdAndName(namespaceId, name);
     }
 
+    public long getTotalCount() {
+        return this.repository.count();
+    }
+
+    public List<FeatureLayerInfo> findRecentFeatureLayerInfo() {
+        // JPA 中,page是从0开始,不是从1开始
+        Page<FeatureLayerInfo> recent = repository.findAll(PageRequest.of(0, 5, Sort.Direction.DESC, "created"));
+        return recent.toList();
+    }
+
+    public Page<FeatureLayerInfo> findAll(PageRequest request) {
+        return repository.findAll(request);
+    }
+
+    public Page<FeatureLayerInfo> findAllByNamespaceId(Long namespaceId, PageRequest request) {
+        return repository.findAllByNamespaceId(namespaceId, request);
+    }
+
+    public PageContent<FeatureLayerInfoResponse> pageFeatureLayerInfo(String name, PageRequest request) {
+        Page<FeatureLayerInfo> page;
+        if (name != null){
+            page = repository.findAllByNameContaining(name, request);
+        }else {
+            page = repository.findAll(request);
+        }
+        if (page == null) {
+            throw new RuntimeException("page not found");
+        }
+        List<FeatureLayerInfo> content = page.getContent();
+        List<FeatureLayerInfoResponse> filled = content.stream()
+                .map(item -> buildFeatureLayerInfoResponse(item))
+                .collect(Collectors.toList());
+        return new PageContent<>(filled, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages());
+    }
+
+    private FeatureLayerInfoResponse buildFeatureLayerInfoResponse(FeatureLayerInfo item) {
+        if (item.getSpatialReferenceId() != null){
+            return new FeatureLayerInfoResponse(item,
+                    spatialReferenceInfoManagement.getSpatialReferenceInfo(item.getSpatialReferenceId()));
+        }else {
+            return new FeatureLayerInfoResponse(item, null);
+        }
+    }
+
     /**
      *
      * @param info
@@ -99,6 +192,7 @@ public class FeatureLayerInfoManagement {
      */
     public static VirtualTable getVirtualTable(FeatureLayerInfo info) {
         VirtualViewInfo view = info.getView();
+        // FIXME: 2024/5/24 后续应去除view 中的 name, 直接用featureLayer中的name即可. 目前是仍然保留
         VirtualTable virtualTable = new VirtualTable(view.getName(), view.getSql());
         List<String> prime = Arrays.stream(view.getPkColumns().split(",")).filter(StringUtils::hasText).collect(Collectors.toList());
         if (!CollectionUtils.isEmpty(prime)) {
@@ -125,12 +219,13 @@ public class FeatureLayerInfoManagement {
 
     private void cacheCoordinateReferenceSystem(FeatureLayerInfo info) {
         if (info.getSpatialReferenceId() != null) {
-            Optional<SpatialReferenceInfo> target = spatialReferenceInfoRepository.findById(info.getSpatialReferenceId());
+            Optional<SpatialReferenceInfo> target = spatialReferenceInfoManagement.findById(info.getSpatialReferenceId());
             if (target.isPresent()) {
                 SpatialReferenceInfo spatialReferenceInfo = target.get();
                 try {
                     CoordinateReferenceSystem coordinateReferenceSystem = CRS.parseWKT(spatialReferenceInfo.getWktText());
                     GeoAtlasMetadataContext.addCoordinateReferenceSystem(spatialReferenceInfo.getId(), coordinateReferenceSystem);
+                    GeoAtlasMetadataContext.addSpatialReferenceInfo(spatialReferenceInfo.getId(), spatialReferenceInfo);
                 } catch (FactoryException e) {
                     throw new RuntimeException(e);
                 }
