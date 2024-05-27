@@ -25,9 +25,9 @@ geo-atlas:
 
 logging:
   level:
+#    root: TRACE
     root: INFO
     org.geoatlas: DEBUG
     org.geotools.jdbc: DEBUG
-    org.springframework: INFO
-    org.springframework.jdbc: DEBUG
+    org.springframework.jdbc.core: DEBUG
   config: classpath:logging.properties

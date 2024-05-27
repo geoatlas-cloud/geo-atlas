@@ -46,18 +46,14 @@ public class FeatureLayerInfoManagement {
 
     private final SpatialReferenceInfoManagement spatialReferenceInfoManagement;
 
-    private final ModelMapper mapper;
-
     public FeatureLayerInfoManagement(FeatureLayerInfoRepository repository,
                                       NamespaceInfoManagement namespaceInfoManagement,
                                       DataStoreInfoManagement dataStoreInfoManagement,
-                                      SpatialReferenceInfoManagement spatialReferenceInfoManagement,
-                                      ModelMapper modelMapper) {
+                                      SpatialReferenceInfoManagement spatialReferenceInfoManagement) {
         this.repository = repository;
         this.namespaceInfoManagement = namespaceInfoManagement;
         this.dataStoreInfoManagement = dataStoreInfoManagement;
         this.spatialReferenceInfoManagement = spatialReferenceInfoManagement;
-        this.mapper = modelMapper;
     }
 
     @Transactional
@@ -90,11 +86,8 @@ public class FeatureLayerInfoManagement {
             if (namespaceInfo == null){
                 throw new RuntimeException("namespace not found");
             }
-
-            FeatureLayerInfo last = old.get();
-            handleMutations(last, info);
-            mapper.map(info, last);
-            repository.save(last);
+            handleMutations(old.get(), info);
+            repository.save(info);
         }else {
             throw new RuntimeException("feature layer not found");
         }

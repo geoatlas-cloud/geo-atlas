@@ -42,7 +42,10 @@ public class FeatureLayerInfo {
     @MappedCollection(idColumn = "feature_layer_id")
     private VirtualViewInfo view;
 
-    @MappedCollection(idColumn = "feature_layer_id", keyColumn = "id")
+    // idColumn 用于指向主表在关联表的外键列, keyColumn用于指定关联数据排序的列(即存储List索引的列),
+    // 它将使用List的index填充, 千万别将其指向ID. 我在此完全新建一个列来存放其索引值
+    // @see https://stackoverflow.com/questions/73760870/primary-key-violation-when-inserting-child-entity/73772534#73772534
+    @MappedCollection(idColumn = "feature_layer_id", keyColumn = "order")
     private List<PyramidRuleExpression> rules;
 
     private String description;
