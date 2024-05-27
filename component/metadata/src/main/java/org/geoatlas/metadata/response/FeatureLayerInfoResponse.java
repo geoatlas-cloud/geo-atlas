@@ -16,6 +16,7 @@ public class FeatureLayerInfoResponse extends FeatureLayerInfo {
         this.setName(info.getName());
         this.setDescription(info.getDescription());
         this.setView(info.getView());
+        this.setRules(info.getRules());
         this.setNamespaceId(info.getNamespaceId());
         this.setSpatialReferenceId(info.getSpatialReferenceId());
         this.setDatastoreId(info.getDatastoreId());
