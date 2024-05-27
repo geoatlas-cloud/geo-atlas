@@ -48,7 +48,7 @@ public class ApplicationConfig {
         return new RuleBasedPyramid(rules);
     }
 
-    @Bean
+//    @Bean
     public Pyramid buildRuledOSMLinesPyramid() {
         List<RuleExpression> rules = new ArrayList<>();
         rules.add(RuleExpressHelper.buildRule(0,5, "EXCLUDE"));

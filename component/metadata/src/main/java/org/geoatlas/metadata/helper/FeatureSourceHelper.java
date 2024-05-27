@@ -56,7 +56,7 @@ public class FeatureSourceHelper {
         try {
             // FIXME: 2024/4/28 考虑统一都是用LayerName?不用这个复杂?
             return new FeatureSourceWrapper(dataStore.getFeatureSource(featureLayerInfo.getView().getName()),
-                    coordinateReferenceSystem);
+                    coordinateReferenceSystem, featureLayerInfo.getRules());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

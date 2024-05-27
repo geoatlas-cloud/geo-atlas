@@ -14,6 +14,9 @@ import org.geoatlas.io.Resource;
 import org.geoatlas.metadata.helper.FeatureSourceHelper;
 import org.geoatlas.metadata.helper.FeatureSourceWrapper;
 import org.geoatlas.pyramid.Pyramid;
+import org.geoatlas.pyramid.PyramidFactory;
+import org.geoatlas.pyramid.action.vector.RuleExpressHelper;
+import org.geoatlas.pyramid.action.vector.RuleExpression;
 import org.geoatlas.pyramid.index.GeoAtlasPyramidException;
 import org.geoatlas.pyramid.index.TileMatrixSet;
 import org.geoatlas.pyramid.index.TileMatrixSetContext;
@@ -23,12 +26,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -37,8 +43,6 @@ import java.util.Map;
  **/
 @Component
 public class GeoAtlasCachePyramidAdapter {
-
-    private final Pyramid pyramid;
 
     private final StorageBroker storageBroker;
 
@@ -52,8 +56,7 @@ public class GeoAtlasCachePyramidAdapter {
 
     protected static final ThreadLocal<ByteArrayResource> TILE_BUFFER = new ThreadLocal();
 
-    public GeoAtlasCachePyramidAdapter(Pyramid pyramid, @Autowired(required = false) StorageBroker storageBroker, FeatureSourceHelper featureSourceHelper) {
-        this.pyramid = pyramid;
+    public GeoAtlasCachePyramidAdapter(@Autowired(required = false) StorageBroker storageBroker, FeatureSourceHelper featureSourceHelper) {
         this.storageBroker = storageBroker;
         this.featureSourceHelper = featureSourceHelper;
     }
@@ -126,6 +129,16 @@ public class GeoAtlasCachePyramidAdapter {
                 long requestTime = System.currentTimeMillis();
                 try {
                     FeatureSourceWrapper wrapper = featureSourceHelper.getFeatureSource(request.getNamespace(), request.getLayer());
+                    List<RuleExpression> rules = null;
+                    if (!CollectionUtils.isEmpty(wrapper.getRules())) {
+                        // FIXME: 2024/5/27 假设每次request都要构建, 是不是太过于细致, 待优化
+                        rules = wrapper.getRules().stream()
+                                .map(expression -> RuleExpressHelper
+                                        .buildRule(expression.getMinLevel(), expression.getMaxLevel(),
+                                                expression.getFilter())).collect(Collectors.toList());
+                        
+                    }
+                    Pyramid pyramid = PyramidFactory.buildPyramid(rules);
                     target = pyramid.getTile(request, wrapper.getFeatureSource(), wrapper.getCrs());
 //              setupCachingStrategy(tile);
                     saveTiles(target, tile, requestTime);
