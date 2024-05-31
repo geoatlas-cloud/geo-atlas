@@ -3,19 +3,18 @@ package org.geoatlas.metadata.persistence.managent;
 import org.geoatlas.metadata.context.GeoAtlasMetadataContext;
 import org.geoatlas.metadata.model.*;
 import org.geoatlas.metadata.persistence.repository.FeatureLayerInfoRepository;
-import org.geoatlas.metadata.persistence.repository.SpatialReferenceInfoRepository;
 import org.geoatlas.metadata.response.FeatureLayerInfoResponse;
 import org.geoatlas.metadata.response.PageContent;
+import org.geoatlas.metadata.response.ResponseStatus;
+import org.geotools.geometry.jts.JTS;
+import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.jdbc.JDBCDataStore;
 import org.geotools.jdbc.VirtualTable;
 import org.geotools.referencing.CRS;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Point;
-import org.locationtech.jts.geom.Polygon;
-import org.modelmapper.ModelMapper;
+import org.locationtech.jts.geom.*;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.TransformException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -46,6 +45,9 @@ public class FeatureLayerInfoManagement {
 
     private final SpatialReferenceInfoManagement spatialReferenceInfoManagement;
 
+    private final CoordinateReferenceSystem wgs_84;
+    private final CoordinateReferenceSystem webMercator;
+
     public FeatureLayerInfoManagement(FeatureLayerInfoRepository repository,
                                       NamespaceInfoManagement namespaceInfoManagement,
                                       DataStoreInfoManagement dataStoreInfoManagement,
@@ -54,6 +56,12 @@ public class FeatureLayerInfoManagement {
         this.namespaceInfoManagement = namespaceInfoManagement;
         this.dataStoreInfoManagement = dataStoreInfoManagement;
         this.spatialReferenceInfoManagement = spatialReferenceInfoManagement;
+        try {
+            this.wgs_84 = CRS.decode("EPSG:4326", true);
+            this.webMercator = CRS.decode("EPSG:3857", true);
+        } catch (FactoryException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Transactional
@@ -128,6 +136,61 @@ public class FeatureLayerInfoManagement {
 
     public FeatureLayerInfo getFeatureLayerInfo(Long id) {
         return repository.findById(id).orElse(null);
+    }
+
+    public FeatureLayerPreviewInfo getFeatureLayerPreviewInfo(Long id) {
+        FeatureLayerInfo featureLayer = getFeatureLayerInfo(id);
+        if (featureLayer ==  null) {
+            throw new RuntimeException(ResponseStatus.NOT_FOUND.getMessage());
+        }
+        NamespaceInfo namespace = namespaceInfoManagement.getNamespaceInfo(featureLayer.getNamespaceId());
+        if (namespace == null) {
+            throw new RuntimeException("Namespace not found.");
+        }
+        FeatureLayerPreviewInfo previewInfo = new FeatureLayerPreviewInfo(featureLayer.getId(), featureLayer.getName(), namespace.getName());
+        FeatureBBoxInfo bbox = featureLayer.getBbox();
+        if (bbox != null) {
+            previewInfo.setZoom(7);
+            if (!bbox.getNatived()) {
+                Envelope envelope = new Envelope(bbox.getMinx(), bbox.getMaxx(), bbox.getMiny(), bbox.getMaxy());
+                Coordinate coordinate = JTS.toGeometry(envelope).getInteriorPoint().getCoordinate();
+                previewInfo.setBbox(bbox);
+                previewInfo.setCenter(coordinate);
+            }else {
+                CoordinateReferenceSystem nativeCrs = null;
+                if (featureLayer.getSpatialReferenceId() != null){
+                    nativeCrs = spatialReferenceInfoManagement.getCoordinateReferenceSystem(featureLayer.getSpatialReferenceId());
+                }else {
+                    try {
+                        nativeCrs = CRS.decode("EPSG:" + featureLayer.getView().getSrid(), true);
+                    } catch (FactoryException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+                if (nativeCrs == null) {
+                    throw new RuntimeException("Can not fetch the featureLayer`s native crs");
+                }
+                ReferencedEnvelope referencedEnvelope = new ReferencedEnvelope(bbox.getMinx(), bbox.getMaxx(), bbox.getMiny(), bbox.getMaxy(), nativeCrs);
+                try {
+                    ReferencedEnvelope transform = referencedEnvelope.transform(wgs_84, true);
+                    FeatureBBoxInfo transformedBBox = new FeatureBBoxInfo();
+                    transformedBBox.setId(bbox.getId());
+                    transformedBBox.setFeatureLayerId(bbox.getFeatureLayerId());
+                    transformedBBox.setMinx(transform.getMinX());
+                    transformedBBox.setMiny(transform.getMinY());
+                    transformedBBox.setMaxx(transform.getMaxX());
+                    transformedBBox.setMaxy(transform.getMaxY());
+                    previewInfo.setBbox(transformedBBox);
+                    previewInfo.setCenter(JTS.toGeometry(transform).getCoordinate());
+                } catch (TransformException e) {
+                    throw new RuntimeException(e);
+                } catch (FactoryException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        return previewInfo;
     }
 
     public FeatureLayerInfo findByNameSpaceIdAndName(Long namespaceId, String name) {

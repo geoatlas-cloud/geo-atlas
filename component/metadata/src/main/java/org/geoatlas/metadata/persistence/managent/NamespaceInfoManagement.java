@@ -68,6 +68,10 @@ public class NamespaceInfoManagement {
         return new PageContent<>(repository.findAll(request));
     }
 
+    public NamespaceInfo getNamespaceInfoByFeatureLayerId(Long featureLayerId) {
+        return repository.findByFeatureLayerId(featureLayerId);
+    }
+
     public List<NamespaceInfo> list() {
         return repository.findAll();
     }

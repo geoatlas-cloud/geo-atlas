@@ -48,6 +48,9 @@ public class FeatureLayerInfo {
     @MappedCollection(idColumn = "feature_layer_id", keyColumn = "order")
     private List<PyramidRuleExpression> rules;
 
+    @MappedCollection(idColumn = "feature_layer_id")
+    private FeatureBBoxInfo bbox;
+
     private String description;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -123,6 +126,14 @@ public class FeatureLayerInfo {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public FeatureBBoxInfo getBbox() {
+        return bbox;
+    }
+
+    public void setBbox(FeatureBBoxInfo bbox) {
+        this.bbox = bbox;
     }
 
     public Timestamp getCreated() {

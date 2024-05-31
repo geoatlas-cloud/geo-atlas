@@ -24,6 +24,7 @@ public class TileMatrixSetFactory {
      *
      */
     public static final double DEFAULT_PIXEL_SIZE_METER = 0.00028;
+    public static final double CGCS2000_PIXEL_SIZE_METER = 0.00026458;
 
     public static int DEFAULT_LEVELS = 22;
 
@@ -140,8 +141,8 @@ public class TileMatrixSetFactory {
                 // 计算比例尺 (单位像素下表示的实际空间距离 * 每个单位情况表示多少米) / (像素大小，或称像元大小)
                 // 约去像元, 即获取到比例尺分母
                 curMatrix.setResolution(resolutions[i]);
-                curMatrix.setScaleDenominator(
-                        (resolutions[i] * metersPerUnit) / DEFAULT_PIXEL_SIZE_METER);
+//                curMatrix.setScaleDenominator((resolutions[i] * metersPerUnit) / DEFAULT_PIXEL_SIZE_METER);
+                curMatrix.setScaleDenominator((resolutions[i] * metersPerUnit) / cellSize);
             }
 
             // 每个瓦片在地图单位中的宽度(表示一个瓦片的宽度, 如256像素多少米或多少度)
@@ -246,6 +247,44 @@ public class TileMatrixSetFactory {
                 title,
                 crs,
                 adjExtent,
+                cornerOfOrigin,
+                resolutions,
+                null,
+                metersPerUnit,
+                cellSize,
+                null,
+                tileWidth,
+                tileHeight,
+                yCoordinateFirst);
+    }
+
+    public static TileMatrixSet createTileMatrixSet(
+            final String title,
+            final CoordinateReferenceSystem crs,
+            final BoundingBox extent,
+            final CornerOfOrigin cornerOfOrigin,
+            final double baseResolution,
+            final int levels,
+            final Double metersPerUnit,
+            final double cellSize,
+            final int tileWidth,
+            final int tileHeight,
+            final boolean yCoordinateFirst) {
+
+        // 根据给定的层级参数, 构建各层级下分辨率值
+        double[] resolutions = new double[levels];
+        // 设置0级的分辨率
+        resolutions[0] = baseResolution;
+
+        for (int i = 1; i < levels; i++) {
+            // 采用常规均匀四分（四叉树）方式进行构建
+            resolutions[i] = resolutions[i - 1] / 2;
+        }
+
+        return createTileMatrixSet(
+                title,
+                crs,
+                extent,
                 cornerOfOrigin,
                 resolutions,
                 null,

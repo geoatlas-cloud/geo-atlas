@@ -57,9 +57,10 @@ public class TileMatrixSetContext {
                             CRS.decode("EPSG:4490", true),
                             BoundingBox.WORLD4490,
                             CornerOfOrigin.TOP_LEFT,
+                            1.40625d, // 天地图经纬度投影0级的分辨率
                             TileMatrixSetFactory.DEFAULT_LEVELS,
-                            null,
-                            TileMatrixSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                            TileMatrixSetFactory.EPSG_4326_TO_METERS,
+                            TileMatrixSetFactory.CGCS2000_PIXEL_SIZE_METER,
                             256,
                             256,
                             false);

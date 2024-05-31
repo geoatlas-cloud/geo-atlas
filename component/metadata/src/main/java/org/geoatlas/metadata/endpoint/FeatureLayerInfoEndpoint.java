@@ -1,6 +1,7 @@
 package org.geoatlas.metadata.endpoint;
 
 import org.geoatlas.metadata.model.FeatureLayerInfo;
+import org.geoatlas.metadata.model.FeatureLayerPreviewInfo;
 import org.geoatlas.metadata.persistence.managent.FeatureLayerInfoManagement;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -55,5 +56,14 @@ public class FeatureLayerInfoEndpoint {
                                                @RequestParam(required = false) String name) {
         PageRequest pageRequest = PageRequest.of(page, size, Sort.by("modified", "created").descending());
         return ResponseEntity.ok(management.pageFeatureLayerInfo(name, pageRequest));
+    }
+
+    @GetMapping("/preview/{id}")
+    public ResponseEntity<?> getFeatureLayerPreview(@PathVariable Long id) {
+        FeatureLayerPreviewInfo previewInfo = management.getFeatureLayerPreviewInfo(id);
+        if (previewInfo == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(previewInfo);
     }
 }

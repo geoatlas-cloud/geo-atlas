@@ -51,6 +51,15 @@ public class NamespaceInfoEndpoint {
         return ResponseEntity.ok(namespaceInfo);
     }
 
+    @GetMapping("/feature_layers/{id}")
+    public ResponseEntity<?> getNamespaceInfoByFeatureLayerId(@PathVariable Long id) {
+        NamespaceInfo namespaceInfo = management.getNamespaceInfoByFeatureLayerId(id);
+        if (namespaceInfo == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(namespaceInfo);
+    }
+
     @GetMapping("/page")
     public ResponseEntity<?> pageNamespaceInfo(@RequestParam(defaultValue = "0") int page,
                                                @RequestParam(defaultValue = "6") int size,
