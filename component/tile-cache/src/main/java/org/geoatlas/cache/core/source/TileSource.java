@@ -41,15 +41,16 @@ public abstract class TileSource {
         return META_TILING_FACTORS;
     }
 
-    protected void saveTiles(TileObject tile, ConveyorTile tileProto, long requestTime) throws GeoAtlasCacheException {
+    protected void transferTile(TileObject tile, ConveyorTile tileProto, long requestTime, boolean persistent) throws GeoAtlasCacheException {
         ByteArrayResource resource = this.getTileBuffer(TILE_BUFFER);
         // copy resource
         tileProto.setBlob(resource);
-        LockProvider.Lock lock = null;
         try {
             writeTileToStream(tile, resource);
             tile.setCreated(requestTime);
-            tileProto.getStorageBroker().put(tile);
+            if (persistent){
+                tileProto.getStorageBroker().put(tile);
+            }
             tileProto.getStorageObject().setCreated(tile.getCreated());
         } catch (StorageException var18) {
             throw new GeoAtlasCacheException(var18);

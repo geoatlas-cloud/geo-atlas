@@ -15,10 +15,13 @@
  */
 package org.geoatlas.cache.core.seed;
 
+import org.geoatlas.cache.core.util.SRS;
 import org.geoatlas.pyramid.index.BoundingBox;
 import org.geotools.util.logging.Logging;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -26,24 +29,31 @@ import java.util.logging.Logger;
 public class SeedRequest {
     private static Logger log = Logging.getLogger(SeedRequest.class.getName());
 
+    @NotBlank(message = "Namespace can not be blank.")
+    private String namespace;
+
+    @NotBlank(message = "Layer name can not be blank.")
     private String name = null;
 
     private BoundingBox bounds = null;
 
-    private String gridSetId;
+    @NotBlank(message = "MatrixSet id can not be blank.")
+    private String matrixSetId = null;
 
-//    private CoordinateReferenceSystem crs;
-
+    @NotNull(message = "Thread count can not be null.")
     private Integer threadCount = null;
 
+    @NotNull(message = "Zoom start can not be null.")
     private Integer zoomStart = null;
 
+    @NotNull(message = "Zoom stop can not be null.")
     private Integer zoomStop = null;
 
+    @NotBlank(message = "Mime format can not be blank.")
     private String format = null;
 
-    private String type =
-            null; //  TODO: This appears to do nothing as it is never changed from being null
+    @NotBlank(message = "Tile task type can not be blank.")
+    private String type = null; //  TODO: This appears to do nothing as it is never changed from being null
 
     private TileTask.TYPE enumType = null;
 
@@ -68,31 +78,37 @@ public class SeedRequest {
      *
      * @param layerName name of the tile layer
      * @param bounds bounds for the requested region
-     * @param gridSetId the grid set id for this request
+     * @param matrixSetId the grid set id for this request
      * @param threadCount the number of threads that should be used for this seed request
      * @param zoomStart the zoom start level for this seed request
      * @param zoomStop the zoom stop level for this seed request
      * @param mimeFormat the MIME format requested
      */
     public SeedRequest(
+            String namespace,
             String layerName,
             BoundingBox bounds,
-            String gridSetId,
+            String matrixSetId,
             int threadCount,
             int zoomStart,
             int zoomStop,
             String mimeFormat,
             TileTask.TYPE type,
             Map<String, String> parameters) {
+        this.namespace = namespace;
         this.name = layerName;
         this.bounds = bounds;
-        this.gridSetId = gridSetId;
+        this.matrixSetId = matrixSetId;
         this.threadCount = threadCount;
         this.zoomStart = zoomStart;
         this.zoomStop = zoomStop;
         this.format = mimeFormat;
         this.enumType = type;
         this.parameters = parameters;
+    }
+
+    public String getNamespace() {
+        return namespace;
     }
 
     /**
@@ -127,8 +143,8 @@ public class SeedRequest {
      *
      * @return String
      */
-    public String getGridSetId() {
-        return this.gridSetId;
+    public String getMatrixSetId() {
+        return this.matrixSetId;
     }
 
     /**
@@ -139,11 +155,6 @@ public class SeedRequest {
     public String getMimeFormat() {
         return this.format;
     }
-
-    /** Used to handle 1.1.x-style seed requests */
-//    public CoordinateReferenceSystem getCRS() {
-//        return this.crs;
-//    }
 
     /**
      * Method returns the zoom start level for this seed request

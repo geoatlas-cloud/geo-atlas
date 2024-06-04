@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletResponse;
  * @since: 1.0
  **/
 @RestController
-@RequestMapping("/tiles")
+@RequestMapping("/v1/tiles")
 public class TileEndpoint {
 
     private final GeoAtlasTileDispatcher dispatcher;

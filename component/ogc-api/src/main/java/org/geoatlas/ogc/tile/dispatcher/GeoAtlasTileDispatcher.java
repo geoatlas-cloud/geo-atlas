@@ -10,6 +10,7 @@ import org.geoatlas.metadata.helper.FeatureSourceHelper;
 import org.geoatlas.metadata.model.FeatureBBoxInfo;
 import org.geoatlas.metadata.model.FeatureLayerInfo;
 import org.geoatlas.metadata.model.NamespaceInfo;
+import org.geoatlas.ogc.tile.context.FeatureTileMatrixSubsetContext;
 import org.geoatlas.ogc.tile.generator.DefaultTileGenerator;
 import org.geoatlas.ogc.tile.generator.GeoAtlasTileGenerator;
 import org.geoatlas.pyramid.index.*;
@@ -39,20 +40,19 @@ public class GeoAtlasTileDispatcher {
     private final StorageBroker storageBroker;
 
     private final FeatureSourceHelper featureSourceHelper;
-    private final FeatureBBoxHelper featureBBoxHelper;
 
-    private final static Map<Integer, TileMatrixSubset> FEATURE_MATRIX_SUBSET_CACHE = new ConcurrentHashMap<>();
+    private final FeatureTileMatrixSubsetContext subsetContext;
 
     private final static Logger log = LoggerFactory.getLogger(GeoAtlasTileDispatcher.class);
 
     public GeoAtlasTileDispatcher(GeoAtlasTileGenerator tileGenerator,
                                   @Autowired(required = false) StorageBroker storageBroker,
                                   FeatureSourceHelper featureSourceHelper,
-                                  FeatureBBoxHelper featureBBoxHelper) {
+                                  FeatureTileMatrixSubsetContext subsetContext) {
         this.tileGenerator = tileGenerator;
         this.storageBroker = storageBroker;
         this.featureSourceHelper = featureSourceHelper;
-        this.featureBBoxHelper = featureBBoxHelper;
+        this.subsetContext = subsetContext;
     }
 
     public final ConveyorTile dispatch(final TileRequest request, HttpServletRequest servletRequest,
@@ -107,7 +107,7 @@ public class GeoAtlasTileDispatcher {
             // Not a Geo Atlas supported format
             throw new GeoAtlasCacheException("Not a geo atlas supported format: " + me.getMessage());
         }
-        TileMatrixSubset subset = getTileMatrixSubset(featureLayerInfo, tileMatrixSet);
+        TileMatrixSubset subset = subsetContext.getTileMatrixSubset(featureLayerInfo, tileMatrixSet);
         ConveyorTile tileReq = getConveyorTile(request, mimeType, subset, servletRequest, servletResponse);
         return tileReq;
     }
@@ -132,16 +132,4 @@ public class GeoAtlasTileDispatcher {
         return tileReq;
     }
 
-    private TileMatrixSubset getTileMatrixSubset(FeatureLayerInfo featureLayerInfo, TileMatrixSet tileMatrixSet) {
-        FeatureBBoxInfo bbox = featureLayerInfo.getBbox();
-        if (bbox == null){
-            return FEATURE_MATRIX_SUBSET_CACHE.computeIfAbsent(Objects.hash(tileMatrixSet.getTitle(), tileMatrixSet.getExtent()), key -> TileMatrixSubsetFactory.createTileMatrixSubset(tileMatrixSet));
-        }else {
-            return FEATURE_MATRIX_SUBSET_CACHE.computeIfAbsent(Objects.hash(tileMatrixSet.getTitle(), bbox), key -> {
-                FeatureBBoxInfo transformed = featureBBoxHelper.toOther(featureLayerInfo, tileMatrixSet.getCrs());
-                return TileMatrixSubsetFactory.createTileMatrixSubset(tileMatrixSet, new BoundingBox(transformed.getMinx(), transformed.getMiny(), transformed.getMaxx(), transformed.getMaxy()));
-            });
-        }
-        // FIXME: 2024/6/4 再做一次容错? 如果创建失败还是给默认?
-    }
 }

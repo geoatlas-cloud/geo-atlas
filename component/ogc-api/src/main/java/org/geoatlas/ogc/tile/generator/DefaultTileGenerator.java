@@ -7,6 +7,8 @@ import org.geoatlas.cache.core.conveyor.ConveyorTile;
 import org.geoatlas.cache.core.locks.MemoryLockProvider;
 import org.geoatlas.cache.core.source.TileSource;
 import org.geoatlas.cache.core.locks.LockProvider;
+import org.geoatlas.cache.core.storage.StorageException;
+import org.geoatlas.io.ByteArrayResource;
 import org.geoatlas.metadata.helper.FeatureSourceHelper;
 import org.geoatlas.metadata.helper.FeatureSourceConveyor;
 import org.geoatlas.metadata.model.PyramidRuleExpression;
@@ -146,9 +148,7 @@ public class DefaultTileGenerator extends TileSource implements GeoAtlasTileGene
                     Pyramid pyramid = findPyramid(request, wrapper.getRules());
                     target = pyramid.getTile(request, wrapper.getFeatureSource(), wrapper.getCrs());
 //              setupCachingStrategy(tile);
-                    if (persistent) {
-                        saveTiles(target, tile, requestTime);
-                    }
+                    transferTile(target, tile, requestTime, persistent);
                 }catch (Exception e) {
                     Throwables.throwIfInstanceOf(e, GeoAtlasCacheException.class);
                     throw new GeoAtlasCacheException("Problem communicating with GeoAtlas TileAPI", e);
