@@ -9,6 +9,7 @@ import org.springframework.data.relational.core.mapping.Table;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.Objects;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -120,5 +121,18 @@ public class FeatureBBoxInfo implements Serializable {
 
     public void setModified(Timestamp modified) {
         this.modified = modified;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FeatureBBoxInfo that = (FeatureBBoxInfo) o;
+        return Objects.equals(minx, that.minx) && Objects.equals(miny, that.miny) && Objects.equals(maxx, that.maxx) && Objects.equals(maxy, that.maxy) && Objects.equals(natived, that.natived) && Objects.equals(featureLayerId, that.featureLayerId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(minx, miny, maxx, maxy, natived, featureLayerId);
     }
 }

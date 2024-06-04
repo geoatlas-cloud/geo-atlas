@@ -1,40 +1,35 @@
-package org.geoatlas.ogc.tile.adapter;
+package org.geoatlas.ogc.tile.generator;
 
 import com.google.common.base.Throwables;
-import org.apache.commons.io.IOUtils;
 import org.geoatlas.cache.core.GeoAtlasCacheException;
 import org.geoatlas.cache.core.GeoAtlasCacheExtensions;
 import org.geoatlas.cache.core.conveyor.ConveyorTile;
 import org.geoatlas.cache.core.locks.MemoryLockProvider;
-import org.geoatlas.cache.core.storage.StorageBroker;
-import org.geoatlas.cache.core.storage.StorageException;
+import org.geoatlas.cache.core.source.TileSource;
 import org.geoatlas.cache.core.locks.LockProvider;
-import org.geoatlas.io.ByteArrayResource;
-import org.geoatlas.io.Resource;
 import org.geoatlas.metadata.helper.FeatureSourceHelper;
-import org.geoatlas.metadata.helper.FeatureSourceWrapper;
+import org.geoatlas.metadata.helper.FeatureSourceConveyor;
+import org.geoatlas.metadata.model.PyramidRuleExpression;
 import org.geoatlas.pyramid.Pyramid;
 import org.geoatlas.pyramid.PyramidFactory;
 import org.geoatlas.pyramid.action.vector.RuleExpressHelper;
 import org.geoatlas.pyramid.action.vector.RuleExpression;
-import org.geoatlas.pyramid.index.GeoAtlasPyramidException;
-import org.geoatlas.pyramid.index.TileMatrixSet;
-import org.geoatlas.pyramid.index.TileMatrixSetContext;
+import org.geoatlas.pyramid.index.*;
 import org.geoatlas.tile.TileObject;
 import org.geoatlas.tile.TileRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -42,9 +37,7 @@ import java.util.stream.Collectors;
  * @since: 1.0
  **/
 @Component
-public class GeoAtlasCachePyramidAdapter {
-
-    private final StorageBroker storageBroker;
+public class DefaultTileGenerator extends TileSource implements GeoAtlasTileGenerator {
 
     private final FeatureSourceHelper featureSourceHelper;
 
@@ -52,20 +45,13 @@ public class GeoAtlasCachePyramidAdapter {
 
     private transient LockProvider lockProviderInstance;
 
-    private static final Logger log = LoggerFactory.getLogger(GeoAtlasCachePyramidAdapter.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultTileGenerator.class);
 
-    protected static final ThreadLocal<ByteArrayResource> TILE_BUFFER = new ThreadLocal();
-
-    public GeoAtlasCachePyramidAdapter(@Autowired(required = false) StorageBroker storageBroker, FeatureSourceHelper featureSourceHelper) {
-        this.storageBroker = storageBroker;
+    public DefaultTileGenerator(FeatureSourceHelper featureSourceHelper) {
         this.featureSourceHelper = featureSourceHelper;
     }
 
-    public StorageBroker getStorageBroker() {
-        return storageBroker;
-    }
-
-    public ConveyorTile getTile(ConveyorTile tile) throws IOException, GeoAtlasCacheException {
+    public ConveyorTile generator(ConveyorTile tile) throws IOException, GeoAtlasCacheException, OutsideCoverageException {
         // FIXME: 2024/5/10 可以再次检查 MimeType, 在应用层面控制MimeType的支持
         // checkMimeType(tile);
 
@@ -74,41 +60,69 @@ public class GeoAtlasCachePyramidAdapter {
             throw new IllegalArgumentException("TileMatrixSet not found by identifier: " + tile.getGridSetId());
         }
         // FIXME: 2024/5/10 需要在metadata中给featureLayer指定coverage, 可以选择从数据源读取或者是自行设定(更推荐自行设定, 性能友好且更通用)
-//        final GridSubset gridSubset = getGridSubset(tileGridSetId);
-//        if (gridSubset == null) {
-//            throw new IllegalArgumentException("Requested gridset not found: " + tileGridSetId);
-//        }
-//        final long[] gridLoc = tile.getTileIndex();
-//        checkNotNull(gridLoc);
+        final TileMatrixSubset gridSubset = tile.getGridSubset();
+        if (gridSubset == null) {
+            throw new IllegalArgumentException("Requested gridset not found: " + tile.getRequest().getSchema());
+        }
+        final long[] gridLoc = tile.getTileIndex();
+        checkNotNull(gridLoc);
         // Final preflight check, throws OutsideCoverageException if necessary
-//        gridSubset.checkCoverage(gridLoc);
+        gridSubset.checkCoverage(gridLoc);
 
         // FIXME: 2024/5/10 暂时不对meta tiles做支持
-//        int metaX;
-//        int metaY;
-//        if (mime.supportsTiling()) {
-//            metaX = info.getMetaTilingX();
-//            metaY = info.getMetaTilingY();
-//        } else {
-//            metaX = metaY = 1;
-//        }
+        int metaX;
+        int metaY;
+        if (tile.getMimeType().supportsTiling()) {
+            metaX = getMetaTilingFactors()[0];
+            metaY = getMetaTilingFactors()[1];
+        } else {
+            metaX = metaY = 1;
+        }
 
-        ConveyorTile returnTile = getTileResponse(tile, true, 1, 1);
+        ConveyorTile tileResponse;
+        if (tile.getStorageBroker() == null) {
+            tileResponse = getNonCachedTile(tile);
+        }else {
+            tileResponse = getTileResponse(tile, true, true, metaX, metaY);
+        }
 
 //        sendTileRequestedEvent(returnTile);
-
-        return returnTile;
+        return tileResponse;
     }
     public ConveyorTile getNonCachedTile(ConveyorTile tile) throws GeoAtlasCacheException {
         try {
-            return getTileResponse(tile, false, 1, 1);
+            return getTileResponse(tile, false, false, 1, 1);
         } catch (IOException e) {
             throw new GeoAtlasCacheException(e);
         }
     }
 
+    @Override
+    public void seedTile(ConveyorTile tile, boolean tryCache) throws GeoAtlasCacheException, IOException {
+        // Ignore a seed call on a tile that's outside the cached grid levels range
+        // 忽略缓存网格级别范围之外的图块上的种子调用
+        final TileMatrixSubset subset = tile.getGridSubset();
+        final int zLevel = (int) tile.getTileIndex()[2];
+        if (!subset.shouldCacheAtZoom(zLevel)) {
+            if (log.isDebugEnabled()) {
+                log.debug(
+                        "Ignoring seed call on tile "
+                                + tile
+                                + " as it's outside the cacheable zoom level range");
+            }
+            return;
+        }
+
+        int metaX = getMetaTilingFactors()[0];
+        int metaY = getMetaTilingFactors()[1];
+        if (!tile.getMimeType().supportsTiling()) {
+            metaX = metaY = 1;
+        }
+        getTileResponse(tile, tryCache, true, metaX, metaY);
+    }
+
     protected ConveyorTile getTileResponse(
-            ConveyorTile tile, final boolean tryCache, final int metaX, final int metaY)
+            ConveyorTile tile, final boolean tryCache, final boolean persistent, final int metaX, final int metaY)
             throws GeoAtlasCacheException, IOException {
 
         if (tryCache && tryCacheFetch(tile)) {
@@ -128,20 +142,13 @@ public class GeoAtlasCachePyramidAdapter {
                 log.debug("--> {} submitting getTile request for tile matrix location on {}", Thread.currentThread().getName(), Arrays.toString(tile.getTileIndex()));
                 long requestTime = System.currentTimeMillis();
                 try {
-                    FeatureSourceWrapper wrapper = featureSourceHelper.getFeatureSource(request.getNamespace(), request.getLayer());
-                    List<RuleExpression> rules = null;
-                    if (!CollectionUtils.isEmpty(wrapper.getRules())) {
-                        // FIXME: 2024/5/27 假设每次request都要构建, 是不是太过于细致, 待优化
-                        rules = wrapper.getRules().stream()
-                                .map(expression -> RuleExpressHelper
-                                        .buildRule(expression.getMinLevel(), expression.getMaxLevel(),
-                                                expression.getFilter())).collect(Collectors.toList());
-                        
-                    }
-                    Pyramid pyramid = PyramidFactory.buildPyramid(rules);
+                    FeatureSourceConveyor wrapper = featureSourceHelper.getFeatureSource(request.getNamespace(), request.getLayer());
+                    Pyramid pyramid = findPyramid(request, wrapper.getRules());
                     target = pyramid.getTile(request, wrapper.getFeatureSource(), wrapper.getCrs());
 //              setupCachingStrategy(tile);
-                    saveTiles(target, tile, requestTime);
+                    if (persistent) {
+                        saveTiles(target, tile, requestTime);
+                    }
                 }catch (Exception e) {
                     Throwables.throwIfInstanceOf(e, GeoAtlasCacheException.class);
                     throw new GeoAtlasCacheException("Problem communicating with GeoAtlas TileAPI", e);
@@ -185,47 +192,24 @@ public class GeoAtlasCachePyramidAdapter {
         return tile;
     }
 
+    protected Pyramid findPyramid(TileRequest request, List<PyramidRuleExpression> ruleExpressionList) {
+        List<RuleExpression> rules = null;
+        if (!CollectionUtils.isEmpty(ruleExpressionList)) {
+            // FIXME: 2024/5/27 假设每次request都要构建, 是不是太过于细致, 待优化
+            rules = ruleExpressionList.stream()
+                    .map(expression -> RuleExpressHelper
+                            .buildRule(expression.getMinLevel(), expression.getMaxLevel(),
+                                    expression.getFilter())).collect(Collectors.toList());
+
+        }
+        return PyramidFactory.buildPyramid(rules);
+    }
+
     /**
      * @param tile
      */
     private void setTileIndexHeader(ConveyorTile tile) {
         tile.servletResp.addHeader("geoatlas-tile-index", Arrays.toString(tile.getTileIndex()));
-    }
-
-    protected void saveTiles(TileObject tile, ConveyorTile tileProto, long requestTime) throws GeoAtlasCacheException {
-        ByteArrayResource resource;
-        resource = this.getTileBuffer(TILE_BUFFER);
-        // copy resource
-        tileProto.setBlob(resource);
-        LockProvider.Lock lock = null;
-        try {
-            writeTileToStream(tile, resource);
-            tile.setCreated(requestTime);
-            tileProto.getStorageBroker().put(tile);
-            tileProto.getStorageObject().setCreated(tile.getCreated());
-        } catch (StorageException var18) {
-            throw new GeoAtlasCacheException(var18);
-        } catch (IOException e) {
-            log.error("Unable to write image tile to ByteArrayOutputStream", e);
-        }
-    }
-
-    protected ByteArrayResource getTileBuffer(ThreadLocal<ByteArrayResource> tl) {
-        ByteArrayResource buffer = (ByteArrayResource) tl.get();
-        if (buffer == null) {
-            buffer = new ByteArrayResource(16384);
-            tl.set(buffer);
-        }
-
-        buffer.truncate();
-        return buffer;
-    }
-
-    public boolean writeTileToStream(final TileObject raw, Resource target) throws IOException {
-        try (OutputStream outStream = target.getOutputStream()) {
-            IOUtils.copy(raw.getBlob().getInputStream(), outStream);
-        }
-        return true;
     }
 
     public static void setCacheControlHeaders(
@@ -247,7 +231,7 @@ public class GeoAtlasCachePyramidAdapter {
     /**
      * Returns the chosen lock provider
      *
-     * @see GeoAtlasCachePyramidAdapter#getLockProvider()
+     * @see DefaultTileGenerator#getLockProvider()
      */
     public LockProvider getLockProvider() {
         if (lockProviderInstance == null) {
@@ -297,7 +281,7 @@ public class GeoAtlasCachePyramidAdapter {
     /**
      * Set the LockProvider is present
      *
-     * @see GeoAtlasCachePyramidAdapter#setLockProvider(LockProvider)
+     * @see DefaultTileGenerator#setLockProvider(LockProvider)
      * @param lockProvider to set for this configuration
      */
     public void setLockProvider(LockProvider lockProvider){

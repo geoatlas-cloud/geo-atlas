@@ -15,6 +15,7 @@
 package org.geoatlas.cache.core.storage;
 
 import org.geoatlas.cache.core.mime.MimeType;
+import org.geoatlas.pyramid.index.TileMatrixSubset;
 
 import java.util.Map;
 
@@ -30,6 +31,7 @@ public class DiscontinuousTileRange extends TileRange {
             int zoomStop,
             TileRangeMask rasterMask,
             MimeType mimeType,
+            TileMatrixSubset subset,
             Map<String, String> parameters) {
 
         super(
@@ -39,6 +41,7 @@ public class DiscontinuousTileRange extends TileRange {
                 zoomStop,
                 rasterMask.getGridCoverages(),
                 mimeType,
+                subset,
                 parameters);
 
         this.mask = rasterMask;

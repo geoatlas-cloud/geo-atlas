@@ -4,15 +4,27 @@ import org.geoatlas.cache.core.GeoAtlasCacheException;
 import org.geoatlas.cache.core.conveyor.ConveyorTile;
 import org.geoatlas.cache.core.mime.MimeException;
 import org.geoatlas.cache.core.mime.MimeType;
-import org.geoatlas.ogc.tile.adapter.GeoAtlasCachePyramidAdapter;
+import org.geoatlas.cache.core.storage.StorageBroker;
+import org.geoatlas.metadata.helper.FeatureBBoxHelper;
+import org.geoatlas.metadata.helper.FeatureSourceHelper;
+import org.geoatlas.metadata.model.FeatureBBoxInfo;
+import org.geoatlas.metadata.model.FeatureLayerInfo;
+import org.geoatlas.metadata.model.NamespaceInfo;
+import org.geoatlas.ogc.tile.generator.DefaultTileGenerator;
+import org.geoatlas.ogc.tile.generator.GeoAtlasTileGenerator;
+import org.geoatlas.pyramid.index.*;
 import org.geoatlas.tile.TileRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -22,12 +34,25 @@ import java.util.Collections;
 @Component
 public class GeoAtlasTileDispatcher {
 
-    private final GeoAtlasCachePyramidAdapter cachePyramidAdapter;
+    private final GeoAtlasTileGenerator tileGenerator;
+
+    private final StorageBroker storageBroker;
+
+    private final FeatureSourceHelper featureSourceHelper;
+    private final FeatureBBoxHelper featureBBoxHelper;
+
+    private final static Map<Integer, TileMatrixSubset> FEATURE_MATRIX_SUBSET_CACHE = new ConcurrentHashMap<>();
 
     private final static Logger log = LoggerFactory.getLogger(GeoAtlasTileDispatcher.class);
 
-    public GeoAtlasTileDispatcher(GeoAtlasCachePyramidAdapter cachePyramidAdapter) {
-        this.cachePyramidAdapter = cachePyramidAdapter;
+    public GeoAtlasTileDispatcher(GeoAtlasTileGenerator tileGenerator,
+                                  @Autowired(required = false) StorageBroker storageBroker,
+                                  FeatureSourceHelper featureSourceHelper,
+                                  FeatureBBoxHelper featureBBoxHelper) {
+        this.tileGenerator = tileGenerator;
+        this.storageBroker = storageBroker;
+        this.featureSourceHelper = featureSourceHelper;
+        this.featureBBoxHelper = featureBBoxHelper;
     }
 
     public final ConveyorTile dispatch(final TileRequest request, HttpServletRequest servletRequest,
@@ -42,14 +67,25 @@ public class GeoAtlasTileDispatcher {
         if (layerName.indexOf(',') != -1) {
             throw new GeoAtlasCacheException("more than one layer requested");
         }
-
-        ConveyorTile tileReq = prepareRequest(request, servletRequest, servletResponse);
+        NamespaceInfo namespaceInfo = featureSourceHelper.getNamespaceInfo(request.getNamespace());
+        if (namespaceInfo == null) {
+            throw new GeoAtlasCacheException("namespace not found");
+        }
+        FeatureLayerInfo featureLayerInfo = featureSourceHelper.getFeatureLayerInfo(request.getNamespace(), layerName, namespaceInfo);
+        if (featureLayerInfo == null){
+            throw new GeoAtlasCacheException("layer not found");
+        }
+        TileMatrixSet tileMatrixSet = TileMatrixSetContext.getTileMatrixSet(request.getSchema());
+        if (tileMatrixSet == null) {
+            throw new GeoAtlasCacheException("TileMatrixSet not found by identifier: " + request.getSchema());
+        }
+        ConveyorTile tileReq = prepareRequest(request, featureLayerInfo, tileMatrixSet, servletRequest, servletResponse);
         if (null == tileReq) {
             return null;
         }
         ConveyorTile tileResp = null;
         try {
-            tileResp = cachePyramidAdapter.getTile(tileReq);
+            tileResp = tileGenerator.generator(tileReq);
         } catch (GeoAtlasCacheException exception) {
             log.error("Error dispatching tile request to Geo Atlas", exception);
             throw exception;
@@ -60,7 +96,9 @@ public class GeoAtlasTileDispatcher {
         return tileResp;
     }
 
-    protected ConveyorTile prepareRequest(TileRequest request, HttpServletRequest servletRequest,
+    protected ConveyorTile prepareRequest(TileRequest request, FeatureLayerInfo featureLayerInfo,
+                                          TileMatrixSet tileMatrixSet,
+                                          HttpServletRequest servletRequest,
                                           HttpServletResponse servletResponse) throws GeoAtlasCacheException {
         final MimeType mimeType;
         try {
@@ -69,26 +107,41 @@ public class GeoAtlasTileDispatcher {
             // Not a Geo Atlas supported format
             throw new GeoAtlasCacheException("Not a geo atlas supported format: " + me.getMessage());
         }
-
-        ConveyorTile tileReq = getConveyorTile(request, mimeType, servletRequest, servletResponse);
+        TileMatrixSubset subset = getTileMatrixSubset(featureLayerInfo, tileMatrixSet);
+        ConveyorTile tileReq = getConveyorTile(request, mimeType, subset, servletRequest, servletResponse);
         return tileReq;
     }
 
     private ConveyorTile getConveyorTile(TileRequest request, MimeType mimeType,
+                                         TileMatrixSubset subset,
                                          HttpServletRequest servletRequest,
                                          HttpServletResponse servletResponse) {
         final String tileMatrixSetId = request.getSchema();
         String layerName = request.getLayer();
         ConveyorTile tileReq =
                 new ConveyorTile(
-                        cachePyramidAdapter.getStorageBroker(),
+                        storageBroker,
                         layerName,
                         tileMatrixSetId,
                         mimeType,
                         request,
                         Collections.emptyMap(), // TODO: 10/11/23 fix this
+                        subset,
                         servletRequest,
                         servletResponse);
         return tileReq;
+    }
+
+    private TileMatrixSubset getTileMatrixSubset(FeatureLayerInfo featureLayerInfo, TileMatrixSet tileMatrixSet) {
+        FeatureBBoxInfo bbox = featureLayerInfo.getBbox();
+        if (bbox == null){
+            return FEATURE_MATRIX_SUBSET_CACHE.computeIfAbsent(Objects.hash(tileMatrixSet.getTitle(), tileMatrixSet.getExtent()), key -> TileMatrixSubsetFactory.createTileMatrixSubset(tileMatrixSet));
+        }else {
+            return FEATURE_MATRIX_SUBSET_CACHE.computeIfAbsent(Objects.hash(tileMatrixSet.getTitle(), bbox), key -> {
+                FeatureBBoxInfo transformed = featureBBoxHelper.toOther(featureLayerInfo, tileMatrixSet.getCrs());
+                return TileMatrixSubsetFactory.createTileMatrixSubset(tileMatrixSet, new BoundingBox(transformed.getMinx(), transformed.getMiny(), transformed.getMaxx(), transformed.getMaxy()));
+            });
+        }
+        // FIXME: 2024/6/4 再做一次容错? 如果创建失败还是给默认?
     }
 }

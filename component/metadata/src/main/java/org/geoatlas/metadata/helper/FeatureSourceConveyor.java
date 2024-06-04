@@ -12,13 +12,13 @@ import java.util.List;
  * @time: 2024/4/29 15:26
  * @since: 1.0
  **/
-public final class FeatureSourceWrapper {
+public final class FeatureSourceConveyor {
     private final SimpleFeatureSource featureSource;
     private final CoordinateReferenceSystem crs;
 
     private final List<PyramidRuleExpression> rules;
 
-    public FeatureSourceWrapper(SimpleFeatureSource featureSource, CoordinateReferenceSystem crs, List<PyramidRuleExpression> rules) {
+    public FeatureSourceConveyor(SimpleFeatureSource featureSource, CoordinateReferenceSystem crs, List<PyramidRuleExpression> rules) {
         this.featureSource = featureSource;
         this.crs = crs;
         if (rules == null){

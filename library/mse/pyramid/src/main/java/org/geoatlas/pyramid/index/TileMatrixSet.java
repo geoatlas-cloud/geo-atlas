@@ -68,6 +68,7 @@ public class TileMatrixSet implements Description{
     }
 
     /**
+     * 默认原点为左上角 已修正, 左下角未测试
      * Finds the spatial bounding box of a rectangular group of tiles.
      *
      * @param rectangleExtent the rectangle of tiles. {minx, miny, maxx, maxy} in tile coordinates
@@ -79,20 +80,20 @@ public class TileMatrixSet implements Description{
         double width = grid.getResolution() * grid.getTileWidth();
         double height = grid.getResolution() * grid.getTileHeight();
 
-        long bottomY = rectangleExtent[1];
-        long topY = rectangleExtent[3];
+        long bottomY = rectangleExtent[3];
+        long topY = rectangleExtent[1];
 
         // 此处假定传递的瓦片坐标属于google体系的瓦片坐标系，即原点在左上角
-        if (CornerOfOrigin.TOP_LEFT.equals(this.cornerOfOrigin)) {
-            bottomY = bottomY - grid.getMatrixHeight();
-            topY = topY - grid.getMatrixHeight();
+        if (CornerOfOrigin.BOTTOM_LEFT.equals(this.cornerOfOrigin)) {
+            bottomY = rectangleExtent[1] - grid.getMatrixHeight() -1;
+            topY = rectangleExtent[3] - grid.getMatrixHeight() + 1;
         }
 
         double[] tileOrigin = tileOrigin();
         double minx = tileOrigin[0] + width * rectangleExtent[0];
-        double miny = tileOrigin[1] + height * (bottomY);
+        double miny = tileOrigin[1] - height * (bottomY + 1);
         double maxx = tileOrigin[0] + width * (rectangleExtent[2] + 1);
-        double maxy = tileOrigin[1] + height * (topY + 1);
+        double maxy = tileOrigin[1] - height * (topY);
         BoundingBox rectangleBounds = new BoundingBox(minx, miny, maxx, maxy);
 
         return rectangleBounds;
@@ -125,6 +126,13 @@ public class TileMatrixSet implements Description{
         return closestIndex(bestLevel, tileBounds);
     }
 
+    /**
+     * 默认原点为左上角 修正未测试, 左下角未测试
+     * @param level
+     * @param tileBounds
+     * @return
+     * @throws MatrixAlignmentMismatchException
+     */
     protected long[] closestIndex(int level, BoundingBox tileBounds)
             throws MatrixAlignmentMismatchException {
         TileMatrix grid = getMatrix(level);
@@ -134,7 +142,7 @@ public class TileMatrixSet implements Description{
 
         double x = (tileBounds.getMinX() - tileOrigin()[0]) / width;
 
-        double y = (tileBounds.getMinY() - tileOrigin()[1]) / height;
+        double y = (tileOrigin()[1] - tileBounds.getMaxY()) / height;
 
         long posX = Math.round(x);
 
@@ -144,7 +152,7 @@ public class TileMatrixSet implements Description{
             throw new MatrixAlignmentMismatchException(x, posX, y, posY);
         }
 
-        if (CornerOfOrigin.TOP_LEFT.equals(this.cornerOfOrigin)) {
+        if (CornerOfOrigin.BOTTOM_LEFT.equals(this.cornerOfOrigin)) {
 //            posY = posY + grid.getNumTilesHigh();
             posY = posY + grid.getMatrixHeight();
         }
@@ -184,6 +192,7 @@ public class TileMatrixSet implements Description{
     }
 
     /**
+     * 默认原点为左上角 已修正, 左下角未测试
      * Find the rectangle of tiles that most closely covers the given rectangle
      *
      * @param level integer zoom level to consider tiles at
@@ -198,11 +207,11 @@ public class TileMatrixSet implements Description{
         double height = grid.getResolution() * grid.getTileHeight();
 
         long minX = (long) Math.floor((rectangeBounds.getMinX() - tileOrigin()[0]) / width);
-        long minY = (long) Math.floor((rectangeBounds.getMinY() - tileOrigin()[1]) / height);
+        long minY = (long) Math.floor((tileOrigin()[1] - rectangeBounds.getMaxY()) / height);
         long maxX = (long) Math.ceil(((rectangeBounds.getMaxX() - tileOrigin()[0]) / width));
-        long maxY = (long) Math.ceil(((rectangeBounds.getMaxY() - tileOrigin()[1]) / height));
+        long maxY = (long) Math.ceil(((tileOrigin()[1] - rectangeBounds.getMinY()) / height));
 
-        if (CornerOfOrigin.TOP_LEFT.equals(this.cornerOfOrigin)) {
+        if (CornerOfOrigin.BOTTOM_LEFT.equals(this.cornerOfOrigin)) {
 //            minY = minY + grid.getNumTilesHigh();
             minY = minY + grid.getMatrixHeight();
 //            maxY = maxY + grid.getNumTilesHigh();

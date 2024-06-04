@@ -30,7 +30,7 @@ public class TileMatrixSubsetFactory {
      * @param gridSet
      * @return
      */
-    public static TileMatrixSubset createTileMatrixSubSet(TileMatrixSet gridSet) {
+    public static TileMatrixSubset createTileMatrixSubset(TileMatrixSet gridSet) {
 
         TileMatrixSubset ret =
                 createTileMatrixSubset(

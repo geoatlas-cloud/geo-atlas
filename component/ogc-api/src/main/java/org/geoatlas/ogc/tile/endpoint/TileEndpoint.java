@@ -1,5 +1,6 @@
 package org.geoatlas.ogc.tile.endpoint;
 
+import org.geoatlas.cache.core.GeoAtlasCacheException;
 import org.geoatlas.cache.core.conveyor.ConveyorTile;
 import org.geoatlas.ogc.tile.dispatcher.GeoAtlasTileDispatcher;
 import org.geoatlas.ogc.tile.util.ResponseUtils;
@@ -29,14 +30,9 @@ public class TileEndpoint {
     public void getTile(@PathVariable String namespace, @PathVariable String layer, @PathVariable String schema, @PathVariable int tileMatrixId,
                                      @PathVariable int tileRow, @PathVariable int tileCol, @PathVariable String format,
                         HttpServletRequest servletRequest,
-                        HttpServletResponse response) {
+                        HttpServletResponse response) throws GeoAtlasCacheException {
         TileRequest request = new TileRequest(namespace, layer, schema, tileCol, tileRow, tileMatrixId, format);
-        ConveyorTile tile;
-        try {
-            tile = dispatcher.dispatch(request, servletRequest, response);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        ConveyorTile tile = dispatcher.dispatch(request, servletRequest, response);
         ResponseUtils.writeTile(tile);
     }
 }

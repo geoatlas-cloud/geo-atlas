@@ -14,14 +14,13 @@
  */
 package org.geoatlas.cache.core.conveyor;
 
+import org.geoatlas.cache.core.GeoAtlasCacheException;
 import org.geoatlas.cache.core.mime.MimeType;
 import org.geoatlas.cache.core.response.TileResponseReceiver;
 import org.geoatlas.cache.core.storage.StorageBroker;
 import org.geoatlas.cache.core.storage.StorageException;
 import org.geoatlas.io.Resource;
-import org.geoatlas.pyramid.index.GeoAtlasPyramidException;
-import org.geoatlas.pyramid.index.TileMatrixSet;
-import org.geoatlas.pyramid.index.TileMatrixSubset;
+import org.geoatlas.pyramid.index.*;
 import org.geoatlas.tile.TileObject;
 import org.geoatlas.tile.TileRequest;
 import org.slf4j.Logger;
@@ -30,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+import java.util.Objects;
 
 /** Represents a request for a tile and carries the information needed to complete it. */
 public class ConveyorTile extends Conveyor implements TileResponseReceiver {
@@ -53,6 +53,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
     private boolean isMetaTileCacheOnly;
 
+
     public ConveyorTile(
             StorageBroker sb,
             String layerId,
@@ -69,25 +70,44 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
             MimeType mimeType,
             TileRequest request,
             Map<String, String> rawParameters,
+            TileMatrixSubset subset,
+            HttpServletRequest servletReq,
+            HttpServletResponse servletResp) {
+        this(sb, layerId, gridSetId, Objects.isNull(request) ? null: new long[]{request.getX(), request.getY(), request.getZ()},
+                mimeType, rawParameters, subset, servletReq, servletResp);
+        this.request = request;
+    }
+
+    public ConveyorTile(
+            StorageBroker sb,
+            String layerId,
+            String gridSetId,
+            long[] tileIndex,
+            MimeType mimeType,
+            Map<String, String> filteringParameters,
+            TileMatrixSubset subset,
             HttpServletRequest servletReq,
             HttpServletResponse servletResp) {
 
         super(layerId, sb, servletReq, servletResp);
         this.gridSetId = gridSetId;
+
         long[] idx = new long[3];
-        if (request != null && request.isValid()) {
-            idx[0] = request.getX();
-            idx[1] = request.getY();
-            idx[2] = request.getZ();
+
+        if (tileIndex != null) {
+            idx[0] = tileIndex[0];
+            idx[1] = tileIndex[1];
+            idx[2] = tileIndex[2];
         }
 
         super.mimeType = mimeType;
-        this.request = request;
-        this.rawParameters = rawParameters;
+
+        this.rawParameters = filteringParameters;
+        this.gridSubset = subset;
 
         stObj =
                 TileObject.createQueryTileObject(
-                        layerId, idx, gridSetId, mimeType.getFormat(), rawParameters);
+                        layerId, idx, gridSetId, mimeType.getFormat(), filteringParameters);
     }
 
     public TileRequest getRequest() {
@@ -151,7 +171,18 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         return stObj.getXYZ();
     }
 
-    public synchronized TileMatrixSubset getGridSubset() {
+    public void setGridSubset(TileMatrixSubset gridSubset) {
+        this.gridSubset = gridSubset;
+    }
+
+    public synchronized TileMatrixSubset getGridSubset() throws GeoAtlasCacheException {
+        if (gridSubset == null && gridSetId != null){
+            TileMatrixSet tileMatrixSet = TileMatrixSetContext.getTileMatrixSet(gridSetId);
+            if (tileMatrixSet == null) {
+                throw new GeoAtlasCacheException("Unknown grid set " + gridSetId);
+            }
+            gridSubset = TileMatrixSubsetFactory.createTileMatrixSubset(tileMatrixSet);
+        }
         return gridSubset;
     }
 

@@ -16,6 +16,7 @@ package org.geoatlas.cache.core.storage;
 
 import org.geoatlas.cache.core.mime.MimeType;
 import org.geoatlas.cache.core.filter.parameters.ParametersUtils;
+import org.geoatlas.pyramid.index.TileMatrixSubset;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -38,6 +39,8 @@ public class TileRange {
 
     private final MimeType mimeType;
 
+    private final TileMatrixSubset subset;
+
     private final Map<String, String> parameters;
 
     private String parametersId;
@@ -49,6 +52,7 @@ public class TileRange {
             int zoomStop,
             long[][] rangeBounds,
             MimeType mimeType,
+            TileMatrixSubset subset,
             Map<String, String> parameters) {
         this(
                 layerName,
@@ -57,6 +61,7 @@ public class TileRange {
                 zoomStop,
                 rangeBounds,
                 mimeType,
+                subset,
                 parameters,
                 ParametersUtils.getId(parameters));
     }
@@ -68,6 +73,7 @@ public class TileRange {
             int zoomStop,
             long[][] rangeBounds,
             MimeType mimeType,
+            TileMatrixSubset subset,
             Map<String, String> parameters,
             String parametersId) {
         this.layerName = layerName;
@@ -87,6 +93,7 @@ public class TileRange {
         this.zoomStart = zoomStart;
         this.zoomStop = zoomStop;
         this.mimeType = mimeType;
+        this.subset = subset;
         this.parameters = parameters;
         this.parametersId = parametersId;
     }
@@ -143,6 +150,10 @@ public class TileRange {
     /** @return the mimeType */
     public MimeType getMimeType() {
         return mimeType;
+    }
+
+    public TileMatrixSubset getSubset() {
+        return subset;
     }
 
     /** @return the parameters */
