@@ -485,7 +485,7 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         // Creation of a new Resource
         TileObject cached =
                 TileObject.createCompleteTileObject(
-                        obj.getCombinedLayerName(),
+                        obj.getLayerName(),
                         obj.getNamespace(),
                         obj.getXYZ(),
 //                        obj.getGridSetId(),

@@ -15,10 +15,11 @@ geo-atlas:
   cache:
     enabled: true
     inner-caching-enabled: true
-    persistence-enabled: true # 默认是file-system
+    persistence-enabled: false # 默认是file-system
     inner:
       storage:
         eviction-policy: EXPIRE_AFTER_ACCESS
+        memory-limit: 256
     persistence:
       storage:
         base-directory: /tmp/geo-atlas-cache
