@@ -18,11 +18,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TileMatrixSubsetFactory {
 
     private static Logger log = LoggerFactory.getLogger(TileMatrixSubsetFactory.class);
+
+    private static final Map<Integer, TileMatrixSubset> TILE_MATRIX_SUBSET_CACHE = new ConcurrentHashMap<>();
 
     /**
      * 取TileMatrixSet中CRS的Extent范围作为coverage的范围
@@ -48,6 +52,17 @@ public class TileMatrixSubsetFactory {
     }
 
     public static TileMatrixSubset createTileMatrixSubset(
+            TileMatrixSet gridSet,
+            BoundingBox extent,
+            Integer zoomStart,
+            Integer zoomStop,
+            Integer minCachedZoom,
+            Integer maxCachedZoom) {
+        return TILE_MATRIX_SUBSET_CACHE.computeIfAbsent(Objects.hash(gridSet.getTitle(), extent, zoomStart, zoomStop, minCachedZoom, maxCachedZoom),
+                key -> doCreateTileMatrixSubset(gridSet, extent, zoomStart, zoomStop, minCachedZoom, maxCachedZoom));
+    }
+
+    private static TileMatrixSubset doCreateTileMatrixSubset(
             TileMatrixSet gridSet,
             BoundingBox extent,
             Integer zoomStart,

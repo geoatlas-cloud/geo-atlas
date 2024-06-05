@@ -5,10 +5,8 @@ import org.geoatlas.cache.core.GeoAtlasCacheException;
 import org.geoatlas.cache.core.GeoAtlasCacheExtensions;
 import org.geoatlas.cache.core.conveyor.ConveyorTile;
 import org.geoatlas.cache.core.locks.MemoryLockProvider;
-import org.geoatlas.cache.core.source.TileSource;
+import org.geoatlas.cache.core.source.AbstractTileSource;
 import org.geoatlas.cache.core.locks.LockProvider;
-import org.geoatlas.cache.core.storage.StorageException;
-import org.geoatlas.io.ByteArrayResource;
 import org.geoatlas.metadata.helper.FeatureSourceHelper;
 import org.geoatlas.metadata.helper.FeatureSourceConveyor;
 import org.geoatlas.metadata.model.PyramidRuleExpression;
@@ -39,7 +37,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
  * @since: 1.0
  **/
 @Component
-public class DefaultTileGenerator extends TileSource implements GeoAtlasTileGenerator {
+public class DefaultTileGenerator extends AbstractTileSource implements GeoAtlasTileGenerator {
 
     private final FeatureSourceHelper featureSourceHelper;
 

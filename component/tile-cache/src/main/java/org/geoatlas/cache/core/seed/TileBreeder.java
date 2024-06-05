@@ -29,10 +29,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanInitializationException;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -86,8 +84,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  *
  * @author Gabriel Roldan, based on Marius Suta's and Arne Kepp's SeedRestlet
  */
-@Component
-@ConditionalOnBean(value = StorageBroker.class)
 public class TileBreeder implements ApplicationContextAware {
     private static final String GWC_SEED_ABORT_LIMIT = "GWC_SEED_ABORT_LIMIT";
 

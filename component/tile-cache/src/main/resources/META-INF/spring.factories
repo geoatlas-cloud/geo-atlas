@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  org.geoatlas.cache.core.config.GeoAtlasCacheAutoConfiguration

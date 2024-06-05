@@ -3,7 +3,7 @@ package org.geoatlas.ogc.tile.cache;
 import org.geoatlas.cache.core.GeoAtlasCacheException;
 import org.geoatlas.cache.core.seed.SeedRequest;
 import org.geoatlas.cache.core.seed.TileBreeder;
-import org.geoatlas.cache.core.service.TileSeedService;
+import org.geoatlas.cache.core.service.AbstractTileSeedService;
 import org.geoatlas.cache.core.storage.StorageBroker;
 import org.geoatlas.metadata.helper.FeatureSourceHelper;
 import org.geoatlas.metadata.model.FeatureLayerInfo;
@@ -19,15 +19,15 @@ import org.springframework.stereotype.Component;
  * @time: 2024/6/4 21:55
  * @since: 1.0
  **/
-@Component(value = "tileSeedService")
+@Component
 @ConditionalOnBean(value = StorageBroker.class)
-public class DefaultTileSeedService extends TileSeedService {
+public class SimpleTileSeedService extends AbstractTileSeedService {
 
     private final FeatureTileMatrixSubsetContext subsetContext;
     private final FeatureSourceHelper featureSourceHelper;
 
-    public DefaultTileSeedService(TileBreeder breeder, FeatureTileMatrixSubsetContext subsetContext,
-                                  FeatureSourceHelper featureSourceHelper) {
+    public SimpleTileSeedService(TileBreeder breeder, FeatureTileMatrixSubsetContext subsetContext,
+                                 FeatureSourceHelper featureSourceHelper) {
         super(breeder);
         this.subsetContext = subsetContext;
         this.featureSourceHelper = featureSourceHelper;

@@ -1,79 +1,30 @@
 package org.geoatlas.cache.core.source;
 
-import org.apache.commons.io.IOUtils;
 import org.geoatlas.cache.core.GeoAtlasCacheException;
 import org.geoatlas.cache.core.conveyor.ConveyorTile;
-import org.geoatlas.cache.core.locks.LockProvider;
-import org.geoatlas.cache.core.storage.StorageException;
-import org.geoatlas.io.ByteArrayResource;
-import org.geoatlas.io.Resource;
-import org.geoatlas.tile.TileObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
- * @time: 2024/6/3 15:12
+ * @time: 2024/6/5 14:26
  * @since: 1.0
  **/
-public abstract class TileSource {
-    private final Logger log = LoggerFactory.getLogger(getClass());
-
+public interface TileSource {
     /**
      * 即默认不使用MetaTiles
      */
-    private final static int[] META_TILING_FACTORS = {1,1};
-
-    protected static final ThreadLocal<ByteArrayResource> TILE_BUFFER = new ThreadLocal<>();
-
-    public abstract void seedTile(ConveyorTile tile, boolean tryCache)
-            throws GeoAtlasCacheException, IOException;
+    int[] META_TILING_FACTORS = {1,1};
 
     /**
      * The size of a metatile in tiles.
      *
      * @return the {x,y} metatiling factors
      */
-    public int[] getMetaTilingFactors() {
+    default int[] getMetaTilingFactors() {
         return META_TILING_FACTORS;
     }
 
-    protected void transferTile(TileObject tile, ConveyorTile tileProto, long requestTime, boolean persistent) throws GeoAtlasCacheException {
-        ByteArrayResource resource = this.getTileBuffer(TILE_BUFFER);
-        // copy resource
-        tileProto.setBlob(resource);
-        try {
-            writeTileToStream(tile, resource);
-            tile.setCreated(requestTime);
-            if (persistent){
-                tileProto.getStorageBroker().put(tile);
-            }
-            tileProto.getStorageObject().setCreated(tile.getCreated());
-        } catch (StorageException var18) {
-            throw new GeoAtlasCacheException(var18);
-        } catch (IOException e) {
-            log.error("Unable to write image tile to ByteArrayOutputStream", e);
-        }
-    }
-
-    protected ByteArrayResource getTileBuffer(ThreadLocal<ByteArrayResource> tl) {
-        ByteArrayResource buffer = (ByteArrayResource) tl.get();
-        if (buffer == null) {
-            buffer = new ByteArrayResource(16 * 1024);
-            tl.set(buffer);
-        }
-
-        buffer.truncate();
-        return buffer;
-    }
-
-    public boolean writeTileToStream(final TileObject raw, Resource target) throws IOException {
-        try (OutputStream outStream = target.getOutputStream()) {
-            IOUtils.copy(raw.getBlob().getInputStream(), outStream);
-        }
-        return true;
-    }
+    void seedTile(ConveyorTile tile, boolean tryCache)
+            throws GeoAtlasCacheException, IOException;
 }

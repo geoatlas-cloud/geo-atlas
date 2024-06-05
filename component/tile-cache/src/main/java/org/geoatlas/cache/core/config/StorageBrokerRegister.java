@@ -21,9 +21,9 @@ import org.springframework.core.type.AnnotationMetadata;
  * @time: 2024/5/9 21:23
  * @since: 1.0
  **/
-public class DefaultBlobStoreConfiguration implements EnvironmentAware, ImportBeanDefinitionRegistrar {
+public class StorageBrokerRegister implements EnvironmentAware, ImportBeanDefinitionRegistrar {
 
-    private static final Logger log = LoggerFactory.getLogger(DefaultBlobStoreConfiguration.class);
+    private static final Logger log = LoggerFactory.getLogger(StorageBrokerRegister.class);
 
     private static final String FILE_SYSTEM_PROVIDER = "file-system";
 
