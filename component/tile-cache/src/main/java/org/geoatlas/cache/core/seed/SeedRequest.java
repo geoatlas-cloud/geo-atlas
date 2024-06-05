@@ -35,6 +35,9 @@ public class SeedRequest {
     @NotBlank(message = "Layer name can not be blank.")
     private String name = null;
 
+    /**
+     * 给定坐标数据坐标系需与TileMatrixSet的坐标系一致
+     */
     private BoundingBox bounds = null;
 
     @NotBlank(message = "MatrixSet id can not be blank.")
