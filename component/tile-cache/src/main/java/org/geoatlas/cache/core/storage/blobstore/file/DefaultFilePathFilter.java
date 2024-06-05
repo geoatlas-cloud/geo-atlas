@@ -43,7 +43,7 @@ public class DefaultFilePathFilter implements FilenameFilter {
         if (tr.getGridSetId() == null) {
             throw new StorageException("Specifying the grid set id is currently mandatory.");
         }
-        String layerName = tr.getLayerName();
+        String layerName = tr.getCombinedLayerName();
         Preconditions.checkNotNull(layerName);
         this.layerPrefix = FilePathUtils.filteredLayerName(layerName);
 

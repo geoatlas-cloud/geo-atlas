@@ -185,16 +185,16 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
             if (log.isDebugEnabled()) {
                 log.debug(
                         "Removing TileObjects for Layer: {}, min/max levels: [{}, {}], TileMatrixSet: {}",
-                        obj.getLayerName(), obj.getZoomStart(), obj.getZoomStop(), obj.getGridSetId());
+                        obj.getCombinedLayerName(), obj.getZoomStart(), obj.getZoomStop(), obj.getGridSetId());
             }
             // Remove layer for the cacheProvider
-            cacheProvider.removeLayer(obj.getLayerName());
+            cacheProvider.removeLayer(obj.getCombinedLayerName());
             // Remove selected TileObject
             if (log.isDebugEnabled()) {
                 log.debug(
                         "Scheduling removal of TileObjects for Layer: {}, min/max levels: "
                                 + "[{}, {}], TileMatrixSet: {}",
-                        obj.getLayerName(), obj.getZoomStart(), obj.getZoomStop(), obj.getGridSetId());
+                        obj.getCombinedLayerName(), obj.getZoomStart(), obj.getZoomStop(), obj.getGridSetId());
             }
             // Remove selected TileRange
             executorService.submit(new BlobStoreTask(store, BlobStoreAction.DELETE_RANGE, obj));
@@ -485,7 +485,8 @@ public class MemoryBlobStore implements BlobStore, ApplicationContextAware {
         // Creation of a new Resource
         TileObject cached =
                 TileObject.createCompleteTileObject(
-                        obj.getLayerName(),
+                        obj.getCombinedLayerName(),
+                        obj.getNamespace(),
                         obj.getXYZ(),
 //                        obj.getGridSetId(),
                         obj.getSchema(),

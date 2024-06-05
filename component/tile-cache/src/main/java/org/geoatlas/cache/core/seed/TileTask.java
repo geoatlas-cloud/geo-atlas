@@ -56,6 +56,8 @@ public abstract class TileTask {
 
     protected String layerName = null;
 
+    protected String namespace = null;
+
     protected long timeSpent = -1;
 
     protected long timeRemaining = -1;
@@ -128,6 +130,10 @@ public abstract class TileTask {
         return layerName;
     }
 
+    public String getNamespace() {
+        return namespace;
+    }
+
     /** @return total number of tiles (in the whole task group), or < 0 if too many to count */
     public long getTilesTotal() {
         return tilesTotal;
@@ -176,6 +182,7 @@ public abstract class TileTask {
                 .append(getTaskId())
                 .append(": ")
                 .append(getLayerName())
+                .append(getNamespace())
                 .append(", ")
                 .append(getType())
                 .append(", ")

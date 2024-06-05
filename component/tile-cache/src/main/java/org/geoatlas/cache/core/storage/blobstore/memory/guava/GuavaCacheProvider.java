@@ -160,7 +160,7 @@ public class GuavaCacheProvider implements CacheProvider {
                                     // Update the current size
                                     currentSize.addAndGet(-obj.getBlobSize());
                                     final String tileKey = generateTileKey(obj);
-                                    final String layerName = obj.getLayerName();
+                                    final String layerName = obj.getCombinedLayerName();
                                     multimap.removeTile(layerName, tileKey);
                                     if (LOGGER.isLoggable(Level.FINE)) {
                                         LOGGER.fine(
@@ -258,7 +258,7 @@ public class GuavaCacheProvider implements CacheProvider {
                     LOGGER.fine("Checking if the layer must not be cached");
                 }
                 // Check if the layer must be cached
-                if (layers.contains(obj.getLayerName())) {
+                if (layers.contains(obj.getCombinedLayerName())) {
                     // The layer must not be cached
                     return null;
                 }
@@ -291,7 +291,7 @@ public class GuavaCacheProvider implements CacheProvider {
                     LOGGER.fine("Checking if the layer must not be cached");
                 }
                 // Check if the layer must be cached
-                if (layers.contains(obj.getLayerName())) {
+                if (layers.contains(obj.getCombinedLayerName())) {
                     // The layer must not be cached
                     return;
                 }
@@ -302,7 +302,7 @@ public class GuavaCacheProvider implements CacheProvider {
                 String id = generateTileKey(obj);
                 // Add the TileObject to the cache and its id in the multimap
                 cache.put(id, obj);
-                multimap.putTile(obj.getLayerName(), id);
+                multimap.putTile(obj.getCombinedLayerName(), id);
             } finally {
                 // Decrement the number of current operations.
                 actualOperations.decrementAndGet();
@@ -324,7 +324,7 @@ public class GuavaCacheProvider implements CacheProvider {
                     LOGGER.fine("Checking if the layer must not be cached");
                 }
                 // Check if the layer must be cached
-                if (layers.contains(obj.getLayerName())) {
+                if (layers.contains(obj.getCombinedLayerName())) {
                     // The layer must not be cached
                     return;
                 }
@@ -494,7 +494,7 @@ public class GuavaCacheProvider implements CacheProvider {
         Map<String, String> parameters = obj.getParameters();
 
         StringBuilder builder =
-                new StringBuilder(obj.getLayerName())
+                new StringBuilder(obj.getCombinedLayerName())
                         .append(SEPARATOR)
 //                        .append(obj.getGridSetId())
                         .append(obj.getSchema())

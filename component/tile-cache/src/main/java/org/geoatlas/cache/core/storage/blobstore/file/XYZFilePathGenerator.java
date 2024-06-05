@@ -73,14 +73,14 @@ public class XYZFilePathGenerator implements FilePathGenerator {
         final long[] tileIndex = tile.getXYZ();
         long x = tileIndex[0];
         int z = (int) tileIndex[2];
-        long y = getY(tile.getLayerName(), tile.getSchema(), x, tileIndex[1], z);
+        long y = getY(tile.getCombinedLayerName(), tile.getSchema(), x, tileIndex[1], z);
 
         StringBuilder path = new StringBuilder(256);
         String fileExtension = mimeType.getFileExtension();
 
         path.append(cacheRoot);
         path.append(File.separatorChar);
-        appendFiltered(tile.getLayerName(), path);
+        appendFiltered(tile.getCombinedLayerName(), path);
         path.append(File.separatorChar);
         String parametersId = tile.getParametersId();
         Map<String, String> parameters = tile.getParameters();

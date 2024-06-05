@@ -89,7 +89,7 @@ public final class BlobStoreListenerList {
     public void sendTileDeleted(final TileObject stObj) {
 
         final long[] xyz = stObj.getXYZ();
-        final String layerName = stObj.getLayerName();
+        final String layerName = stObj.getCombinedLayerName();
         final String gridSetId = stObj.getSchema();
         final String blobFormat = stObj.getFormat();
         final String paramsId = stObj.getParametersId();
@@ -118,7 +118,7 @@ public final class BlobStoreListenerList {
     public void sendTileStored(final TileObject stObj) {
 
         final long[] xyz = stObj.getXYZ();
-        final String layerName = stObj.getLayerName();
+        final String layerName = stObj.getCombinedLayerName();
         final String gridSetId = stObj.getSchema();
         final String blobFormat = stObj.getFormat();
         final String paramsId = stObj.getParametersId();
@@ -156,7 +156,7 @@ public final class BlobStoreListenerList {
     public void sendTileUpdated(final TileObject stObj, final long oldSize) {
 
         final long[] xyz = stObj.getXYZ();
-        final String layerName = stObj.getLayerName();
+        final String layerName = stObj.getCombinedLayerName();
         final String gridSetId = stObj.getSchema();
         final String blobFormat = stObj.getFormat();
         final String paramsId = stObj.getParametersId();

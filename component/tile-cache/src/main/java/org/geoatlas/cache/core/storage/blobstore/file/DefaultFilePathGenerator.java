@@ -72,7 +72,7 @@ public class DefaultFilePathGenerator implements FilePathGenerator {
 
         path.append(cacheRoot);
         path.append(File.separatorChar);
-        appendFiltered(tile.getLayerName(), path);
+        appendFiltered(tile.getCombinedLayerName(), path);
         path.append(File.separatorChar);
         appendGridsetZoomLevelDir(tile.getSchema(), z, path);
         String parametersId = tile.getParametersId();

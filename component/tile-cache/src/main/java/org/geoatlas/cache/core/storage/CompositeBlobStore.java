@@ -165,22 +165,22 @@ public class CompositeBlobStore implements BlobStore, BlobStoreConfigurationList
 
     @Override
     public boolean delete(TileObject obj) throws StorageException {
-        return readFunctionUnsafe(() -> store(obj.getLayerName()).delete(obj));
+        return readFunctionUnsafe(() -> store(obj.getCombinedLayerName()).delete(obj));
     }
 
     @Override
     public boolean delete(TileRange obj) throws StorageException {
-        return readFunctionUnsafe(() -> store(obj.getLayerName()).delete(obj));
+        return readFunctionUnsafe(() -> store(obj.getCombinedLayerName()).delete(obj));
     }
 
     @Override
     public boolean get(TileObject obj) throws StorageException {
-        return readFunctionUnsafe(() -> store(obj.getLayerName()).get(obj));
+        return readFunctionUnsafe(() -> store(obj.getCombinedLayerName()).get(obj));
     }
 
     @Override
     public void put(TileObject obj) throws StorageException {
-        readActionUnsafe(() -> store(obj.getLayerName()).put(obj));
+        readActionUnsafe(() -> store(obj.getCombinedLayerName()).put(obj));
     }
 
     @Deprecated

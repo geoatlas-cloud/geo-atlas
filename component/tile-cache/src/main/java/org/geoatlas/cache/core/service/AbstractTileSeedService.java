@@ -25,7 +25,7 @@ public abstract class AbstractTileSeedService implements TileSeedService{
         if (matrixSet == null) {
             throw new GeoAtlasCacheException("TileMatrixSet not found");
         }
-        breeder.seed(request.getLayerName(), request, getSubset(request, matrixSet));
+        breeder.seed(request, getSubset(request, matrixSet));
     }
 
     /**

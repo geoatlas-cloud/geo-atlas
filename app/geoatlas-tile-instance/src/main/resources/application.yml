@@ -14,7 +14,7 @@ jasypt:
 geo-atlas:
   cache:
     enabled: true
-    inner-caching-enabled: false
+    inner-caching-enabled: true
     persistence-enabled: true # 默认是file-system
     inner:
       storage:

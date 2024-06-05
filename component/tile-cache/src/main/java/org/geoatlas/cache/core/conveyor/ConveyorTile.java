@@ -66,6 +66,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     public ConveyorTile(
             StorageBroker sb,
             String layerId,
+            String namespace,
             String gridSetId,
             MimeType mimeType,
             TileRequest request,
@@ -73,7 +74,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
             TileMatrixSubset subset,
             HttpServletRequest servletReq,
             HttpServletResponse servletResp) {
-        this(sb, layerId, gridSetId, Objects.isNull(request) ? null: new long[]{request.getX(), request.getY(), request.getZ()},
+        this(sb, layerId, namespace, gridSetId, Objects.isNull(request) ? null: new long[]{request.getX(), request.getY(), request.getZ()},
                 mimeType, rawParameters, subset, servletReq, servletResp);
         this.request = request;
     }
@@ -81,6 +82,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
     public ConveyorTile(
             StorageBroker sb,
             String layerId,
+            String namespace,
             String gridSetId,
             long[] tileIndex,
             MimeType mimeType,
@@ -107,7 +109,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
 
         stObj =
                 TileObject.createQueryTileObject(
-                        layerId, idx, gridSetId, mimeType.getFormat(), filteringParameters);
+                        layerId, namespace, idx, gridSetId, mimeType.getFormat(), filteringParameters);
     }
 
     public TileRequest getRequest() {

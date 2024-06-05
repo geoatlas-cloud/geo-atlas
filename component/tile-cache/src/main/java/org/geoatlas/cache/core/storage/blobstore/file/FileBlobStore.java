@@ -393,7 +393,7 @@ public class FileBlobStore implements BlobStore {
     @Override
     public boolean delete(TileRange trObj) throws StorageException {
 
-        String prefix = path + File.separator + filteredLayerName(trObj.getLayerName());
+        String prefix = path + File.separator + filteredLayerName(trObj.getCombinedLayerName());
 
         final File layerPath = new File(prefix);
 
@@ -407,7 +407,7 @@ public class FileBlobStore implements BlobStore {
             throw new StorageException(prefix + " does is not a directory or is not writable.");
         }
 
-        final String layerName = trObj.getLayerName();
+        final String layerName = trObj.getCombinedLayerName();
         final String gridSetId = trObj.getGridSetId();
         final String blobFormat = trObj.getMimeType().getFormat();
         final String parametersId = trObj.getParametersId();
@@ -489,7 +489,7 @@ public class FileBlobStore implements BlobStore {
             }
         }
 
-        putParametersMetadata(stObj.getLayerName(), stObj.getParametersId(), stObj.getParameters());
+        putParametersMetadata(stObj.getCombinedLayerName(), stObj.getParametersId(), stObj.getParameters());
 
         /*
          * this is important because listeners may be tracking tile existence

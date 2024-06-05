@@ -122,6 +122,7 @@ public class GeoAtlasTileDispatcher {
                 new ConveyorTile(
                         storageBroker,
                         layerName,
+                        request.getNamespace(),
                         tileMatrixSetId,
                         mimeType,
                         request,

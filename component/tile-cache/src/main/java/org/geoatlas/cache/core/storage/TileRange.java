@@ -21,12 +21,16 @@ import org.geoatlas.pyramid.index.TileMatrixSubset;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static org.geoatlas.tile.util.TileObjectUtils.GeneratorCombinedName;
+
 /**
  * A 3 dimensional tile range inside a grid set, specified by a range of zooms for fast filtering
  * and a set of (zoom level,xy bounds) specifications
  */
 public class TileRange {
     private final String layerName;
+
+    private final String namespace;
 
     private final String gridSetId;
 
@@ -47,6 +51,7 @@ public class TileRange {
 
     public TileRange(
             String layerName,
+            String namespace,
             String gridSetId,
             int zoomStart,
             int zoomStop,
@@ -56,6 +61,7 @@ public class TileRange {
             Map<String, String> parameters) {
         this(
                 layerName,
+                namespace,
                 gridSetId,
                 zoomStart,
                 zoomStop,
@@ -68,6 +74,7 @@ public class TileRange {
 
     public TileRange(
             String layerName,
+            String namespace,
             String gridSetId,
             int zoomStart,
             int zoomStop,
@@ -77,6 +84,7 @@ public class TileRange {
             Map<String, String> parameters,
             String parametersId) {
         this.layerName = layerName;
+        this.namespace = namespace;
         this.gridSetId = gridSetId;
         if (rangeBounds == null) {
             this.rangeBounds = null;
@@ -140,6 +148,14 @@ public class TileRange {
     /** @return the layerName */
     public String getLayerName() {
         return layerName;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public String getCombinedLayerName(){
+        return GeneratorCombinedName(namespace, layerName);
     }
 
     /** @return the gridSetId */

@@ -30,13 +30,14 @@ class TruncateTask extends TileTask {
 
     private final StorageBroker storageBroker;
 
-    public TruncateTask(StorageBroker sb, TileRange tr, TileSource tl, String layerName) {
+    public TruncateTask(StorageBroker sb, TileRange tr, TileSource tl, String layerName, String namespace) {
         this.storageBroker = sb;
         this.tr = tr;
         this.tl = tl;
 
         super.parsedType = TileTask.TYPE.TRUNCATE;
         super.layerName = layerName;
+        super.namespace = namespace;
     }
 
     @Override

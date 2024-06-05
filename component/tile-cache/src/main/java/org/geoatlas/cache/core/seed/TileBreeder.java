@@ -192,14 +192,12 @@ public class TileBreeder implements ApplicationContextAware {
     }
 
     /** Create and dispatch tasks to fulfil a seed request */
-    // TODO: The SeedRequest specifies a layer name. Would it make sense to use that instead of
-    // including one as a separate parameter?
-    public void seed(final String layerName, final SeedRequest sr, final TileMatrixSubset subset) throws GeoAtlasCacheException {
+    public void seed(final SeedRequest sr, final TileMatrixSubset subset) throws GeoAtlasCacheException {
 
         TileRange tr = createTileRange(sr, source, subset);
 
         TileTask[] tasks =
-                createTasks(tr, source, sr.getType(), sr.getThreadCount(), sr.getLayerName());
+                createTasks(tr, source, sr.getType(), sr.getThreadCount(), sr.getLayerName(), sr.getNamespace());
 
         dispatchTasks(tasks);
     }
@@ -218,11 +216,11 @@ public class TileBreeder implements ApplicationContextAware {
             throws GeoAtlasCacheException {
 
         String layerName = tr.getLayerName();
-        return createTasks(tr, source, type, threadCount, layerName);
+        return createTasks(tr, source, type, threadCount, layerName, tr.getNamespace());
     }
 
     public TileTask[] createTasks(
-            TileRange tr, TileSource tl, TileTask.TYPE type, int threadCount, String layerName)
+            TileRange tr, TileSource tl, TileTask.TYPE type, int threadCount, String layerName, String namespace)
             throws GeoAtlasCacheException {
         return createTasks(
                 tr,
@@ -230,6 +228,7 @@ public class TileBreeder implements ApplicationContextAware {
                 type,
                 threadCount,
                 layerName,
+                namespace,
                 TILE_FAILURE_RETRY_COUNT_DEFAULT,
                 TILE_FAILURE_RETRY_WAIT_TIME_DEFAULT,
                 TOTAL_FAILURES_BEFORE_ABORTING_DEFAULT);
@@ -255,6 +254,7 @@ public class TileBreeder implements ApplicationContextAware {
             TileTask.TYPE type,
             int threadCount,
             String layerName,
+            String namespace,
             int tileFailureRetryCount,
             long tileFailureRetryWaitTime,
             long totalFailuresBeforeAborting)
@@ -273,9 +273,9 @@ public class TileBreeder implements ApplicationContextAware {
         AtomicInteger sharedThreadCount = new AtomicInteger();
         for (int i = 0; i < threadCount; i++) {
             if (type == TileTask.TYPE.TRUNCATE) {
-                tasks[i] = createTruncateTask(trIter, tl, layerName);
+                tasks[i] = createTruncateTask(trIter, tl, layerName, namespace);
             } else {
-                SeedTask task = (SeedTask) createSeedTask(type, trIter, tl, layerName);
+                SeedTask task = (SeedTask) createSeedTask(type, trIter, tl, layerName, namespace);
                 task.setFailurePolicy(
                         tileFailureRetryCount,
                         tileFailureRetryWaitTime,
@@ -360,8 +360,9 @@ public class TileBreeder implements ApplicationContextAware {
         coveredGridLevels = subset.expandToMetaFactors(coveredGridLevels, metaTilingFactors);
 
         String layerName = req.getLayerName();
+        String namespace = req.getNamespace();
         Map<String, String> parameters = req.getParameters();
-        return new TileRange(layerName, gridSetId, zoomStart, zoomStop, coveredGridLevels, mimeType, subset, parameters);
+        return new TileRange(layerName, namespace, gridSetId, zoomStart, zoomStop, coveredGridLevels, mimeType, subset, parameters);
     }
 
     /**
@@ -372,23 +373,22 @@ public class TileBreeder implements ApplicationContextAware {
      * @param tl the layer
      */
     private TileTask createSeedTask(
-            TileTask.TYPE type, TileRangeIterator trIter, TileSource tl, String layerName)
+            TileTask.TYPE type, TileRangeIterator trIter, TileSource tl, String layerName, String namespace)
             throws IllegalArgumentException {
 
         switch (type) {
             case SEED:
-                return new SeedTask(storageBroker, trIter, tl, false, layerName);
+                return new SeedTask(storageBroker, trIter, tl, false, layerName, namespace);
             case RESEED:
-                return new SeedTask(storageBroker, trIter, tl, true, layerName);
+                return new SeedTask(storageBroker, trIter, tl, true, layerName, namespace);
             default:
                 throw new IllegalArgumentException("Unknown request type " + type);
         }
     }
 
-    private TileTask createTruncateTask(
-            TileRangeIterator trIter, TileSource tl, String layerName) {
+    private TileTask createTruncateTask(TileRangeIterator trIter, TileSource tl, String layerName, String namespace) {
 
-        return new TruncateTask(storageBroker, trIter.getTileRange(), tl, layerName);
+        return new TruncateTask(storageBroker, trIter.getTileRange(), tl, layerName, namespace);
     }
 
     /**

@@ -59,7 +59,7 @@ class SeedTask extends TileTask {
             StorageBroker sb,
             TileRangeIterator trIter,
             TileSource source,
-            boolean reseed, String layerName) {
+            boolean reseed, String layerName, String namespace) {
         this.storageBroker = sb;
         this.trIter = trIter;
         this.source = source;
@@ -78,6 +78,7 @@ class SeedTask extends TileTask {
 
         super.state = TileTask.STATE.READY;
         super.layerName = layerName;
+        super.namespace = namespace;
     }
 
     // TODO: refactoring this into smaller functions might improve readability
@@ -94,6 +95,7 @@ class SeedTask extends TileTask {
         final long START_TIME = System.currentTimeMillis();
 
         final String layerName = getLayerName();
+        final String namespace = getNamespace();
         log.info(getThreadName() + " begins seeding layer : " + layerName);
 
         TileRange tr = trIter.getTileRange();
@@ -120,6 +122,7 @@ class SeedTask extends TileTask {
                     new ConveyorTile(
                             storageBroker,
                             layerName,
+                            namespace,
                             tr.getGridSetId(),
                             gridLoc,
                             tr.getMimeType(),

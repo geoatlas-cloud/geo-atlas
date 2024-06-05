@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -30,7 +31,7 @@ public class TileSeedEndpoint {
     }
 
     @PostMapping("/seed")
-    public ResponseEntity<?> seed(@Valid SeedRequest request) throws GeoAtlasCacheException {
+    public ResponseEntity<?> seed(@Valid @RequestBody SeedRequest request) throws GeoAtlasCacheException {
         tileSeedService.doSeed(request);
         return ResponseEntity.ok().build();
     }

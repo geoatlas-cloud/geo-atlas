@@ -111,6 +111,10 @@ public class SeedRequest {
         return namespace;
     }
 
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
+    }
+
     /**
      * Method returns the name of the tileLayer that was requested
      *
@@ -118,6 +122,10 @@ public class SeedRequest {
      */
     public String getLayerName() {
         return this.name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     /**
@@ -129,14 +137,9 @@ public class SeedRequest {
         return this.bounds;
     }
 
-    /** Whether any request filters should be updated after this seed request completes. */
-//    public boolean getFilterUpdate() {
-//        if (filterUpdate != null) {
-//            return filterUpdate;
-//        } else {
-//            return false;
-//        }
-//    }
+    public void setBounds(BoundingBox bounds) {
+        this.bounds = bounds;
+    }
 
     /**
      * Method returns the grid set id for this request
@@ -145,6 +148,10 @@ public class SeedRequest {
      */
     public String getMatrixSetId() {
         return this.matrixSetId;
+    }
+
+    public void setMatrixSetId(String matrixSetId) {
+        this.matrixSetId = matrixSetId;
     }
 
     /**
@@ -156,6 +163,10 @@ public class SeedRequest {
         return this.format;
     }
 
+    public void setFormat(String format) {
+        this.format = format;
+    }
+
     /**
      * Method returns the zoom start level for this seed request
      *
@@ -163,6 +174,10 @@ public class SeedRequest {
      */
     public Integer getZoomStart() {
         return this.zoomStart;
+    }
+
+    public void setZoomStart(Integer zoomStart) {
+        this.zoomStart = zoomStart;
     }
 
     /**
@@ -174,6 +189,10 @@ public class SeedRequest {
         return this.zoomStop;
     }
 
+    public void setZoomStop(Integer zoomStop) {
+        this.zoomStop = zoomStop;
+    }
+
     /**
      * Method returns the number of threads that should be used for this seed request
      *
@@ -181,6 +200,10 @@ public class SeedRequest {
      */
     public Integer getThreadCount() {
         return threadCount;
+    }
+
+    public void setThreadCount(Integer threadCount) {
+        this.threadCount = threadCount;
     }
 
     /**
@@ -209,6 +232,10 @@ public class SeedRequest {
         }
 
         return enumType;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     /**

@@ -26,6 +26,7 @@ public class DiscontinuousTileRange extends TileRange {
 
     public DiscontinuousTileRange(
             String layerName,
+            String namespace,
             String gridSetId,
             int zoomStart,
             int zoomStop,
@@ -36,6 +37,7 @@ public class DiscontinuousTileRange extends TileRange {
 
         super(
                 layerName,
+                namespace,
                 gridSetId,
                 zoomStart,
                 zoomStop,

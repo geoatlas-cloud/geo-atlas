@@ -49,7 +49,7 @@ public class XYZFilePathFilter implements FilenameFilter {
         if (tr.getGridSetId() == null) {
             throw new StorageException("Specifying the grid set id is currently mandatory.");
         }
-        String layerName = tr.getLayerName();
+        String layerName = tr.getCombinedLayerName();
         Preconditions.checkNotNull(layerName);
         this.layerPrefix = filteredLayerName(layerName);
 
@@ -149,7 +149,7 @@ public class XYZFilePathFilter implements FilenameFilter {
             long x = Long.parseLong(parent.getName());
             int z = Integer.parseInt(parent.getParentFile().getName());
             // adjust y based on the tms vs slippy convention
-            y = generator.getY(tr.getLayerName(), tr.getGridSetId(), x, y, z);
+            y = generator.getY(tr.getCombinedLayerName(), tr.getGridSetId(), x, y, z);
 
             return tr.contains(x, y, z);
         } catch (Exception e) {

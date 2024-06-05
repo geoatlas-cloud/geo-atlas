@@ -6,6 +6,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Map;
 
+import static org.geoatlas.tile.util.TileObjectUtils.GeneratorCombinedName;
+
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
  * @time: 2024/4/21 16:22
@@ -27,6 +29,9 @@ public class TileObject implements Serializable {
     String parameters_id = null;
     long[] xyz;
     String layer_name;
+
+    String namespace;
+
     Map<String, String> parameters;
     String schema;
 
@@ -39,9 +44,10 @@ public class TileObject implements Serializable {
     private TileObject() {
     }
 
-    public static TileObject createQueryTileObject(String layerName, long[] xyz, String schema, String format, Map<String, String> parameters) {
+    public static TileObject createQueryTileObject(String layerName, String namespace, long[] xyz, String schema, String format, Map<String, String> parameters) {
         TileObject obj = new TileObject();
         obj.layer_name = layerName;
+        obj.namespace = namespace;
         obj.xyz = xyz;
         obj.schema = schema;
         obj.format = format;
@@ -50,16 +56,17 @@ public class TileObject implements Serializable {
     }
 
     public static TileObject createCompleteTileObject(TileRequest request, Resource blob) {
-        return createCompleteTileObject(request.getLayer(), new long[]{request.getX(), request.getY(), request.getZ()}, request.getSchema(), request.getFormat(), null, blob);
+        return createCompleteTileObject(request.getLayer(), request.getNamespace(), new long[]{request.getX(), request.getY(), request.getZ()}, request.getSchema(), request.getFormat(), null, blob);
     }
 
     public static TileObject createCompleteTileObject(TileRequest request, Resource blob, String mimeType) {
-        return createCompleteTileObject(request.getLayer(), new long[]{request.getX(), request.getY(), request.getZ()}, request.getSchema(), mimeType, null, blob);
+        return createCompleteTileObject(request.getLayer(), request.getNamespace(), new long[]{request.getX(), request.getY(), request.getZ()}, request.getSchema(), mimeType, null, blob);
     }
 
-    public static TileObject createCompleteTileObject(String layerName, long[] xyz, String schema, String format, Map<String, String> parameters, Resource blob) {
+    public static TileObject createCompleteTileObject(String layerName, String namespace, long[] xyz, String schema, String format, Map<String, String> parameters, Resource blob) {
         TileObject obj = new TileObject();
         obj.layer_name = layerName;
+        obj.namespace = namespace;
         obj.xyz = xyz;
         obj.schema = schema;
         obj.format = format;
@@ -109,6 +116,18 @@ public class TileObject implements Serializable {
 
     public String getLayerName() {
         return this.layer_name;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    /**
+     * 使用该属性替换LayerName, 用以包含namespace
+     * @return
+     */
+    public String getCombinedLayerName(){
+        return GeneratorCombinedName(namespace, layer_name);
     }
 
     public Map<String, String> getParameters() {
