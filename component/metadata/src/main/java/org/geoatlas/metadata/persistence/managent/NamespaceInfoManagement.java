@@ -1,10 +1,11 @@
 package org.geoatlas.metadata.persistence.managent;
 
+import org.geoatlas.metadata.event.NamespaceDeleteEvent;
 import org.geoatlas.metadata.model.NamespaceInfo;
 import org.geoatlas.metadata.persistence.repository.NamespaceInfoRepository;
 import org.geoatlas.metadata.response.PageContent;
 import org.modelmapper.ModelMapper;
-import org.springframework.data.domain.Page;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -20,10 +21,14 @@ import java.util.Optional;
 public class NamespaceInfoManagement {
 
     private final NamespaceInfoRepository repository;
+    private final ApplicationEventPublisher eventPublisher;
     private final ModelMapper mapper;
 
-    public NamespaceInfoManagement(NamespaceInfoRepository repository, ModelMapper mapper) {
+    public NamespaceInfoManagement(NamespaceInfoRepository repository,
+                                   ApplicationEventPublisher eventPublisher,
+                                   ModelMapper mapper) {
         this.repository = repository;
+        this.eventPublisher = eventPublisher;
         this.mapper = mapper;
     }
 
@@ -35,7 +40,11 @@ public class NamespaceInfoManagement {
     }
 
     public void removeNamespaceInfo(Long id) {
-        repository.deleteById(id);
+        Optional<NamespaceInfo> last = repository.findById(id);
+        if (last.isPresent()) {
+            repository.deleteById(id);
+            eventPublisher.publishEvent(new NamespaceDeleteEvent(last.get()));
+        }
     }
 
     public void updateNamespaceInfo(NamespaceInfo info) {

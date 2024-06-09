@@ -5,13 +5,10 @@ import org.geoatlas.cache.core.conveyor.ConveyorTile;
 import org.geoatlas.cache.core.mime.MimeException;
 import org.geoatlas.cache.core.mime.MimeType;
 import org.geoatlas.cache.core.storage.StorageBroker;
-import org.geoatlas.metadata.helper.FeatureBBoxHelper;
 import org.geoatlas.metadata.helper.FeatureSourceHelper;
-import org.geoatlas.metadata.model.FeatureBBoxInfo;
 import org.geoatlas.metadata.model.FeatureLayerInfo;
 import org.geoatlas.metadata.model.NamespaceInfo;
 import org.geoatlas.ogc.tile.context.FeatureTileMatrixSubsetContext;
-import org.geoatlas.ogc.tile.generator.DefaultTileGenerator;
 import org.geoatlas.ogc.tile.generator.GeoAtlasTileGenerator;
 import org.geoatlas.pyramid.index.*;
 import org.geoatlas.tile.TileRequest;
@@ -23,9 +20,6 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>

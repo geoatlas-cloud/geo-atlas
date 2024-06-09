@@ -49,9 +49,7 @@ public class FeatureBBoxHelper {
         }
         try {
             defaultEnvelop = defaultEnvelop.transform(other, true);
-        } catch (TransformException e) {
-            throw new RuntimeException(e);
-        } catch (FactoryException e) {
+        } catch (TransformException | FactoryException e) {
             throw new RuntimeException(e);
         }
         return buildFeatureBBox(layer, defaultEnvelop);

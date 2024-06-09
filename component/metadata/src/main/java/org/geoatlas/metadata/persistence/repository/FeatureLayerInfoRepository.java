@@ -5,6 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
+import java.util.List;
+
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
  * @time: 2024/4/27 20:58
@@ -15,6 +17,10 @@ public interface FeatureLayerInfoRepository extends PagingAndSortingRepository<F
     FeatureLayerInfo findFirstByNamespaceIdAndName(Long namespaceId, String name);
 
     boolean existsByNamespaceIdAndName(Long namespaceId, String name);
+
+    List<FeatureLayerInfo> findAllByNamespaceId(Long namespaceId);
+
+    List<FeatureLayerInfo> findAllByDatastoreId(Long datastoreId);
 
     Page<FeatureLayerInfo> findAllByNamespaceId(Long namespaceId, Pageable pageable);
 

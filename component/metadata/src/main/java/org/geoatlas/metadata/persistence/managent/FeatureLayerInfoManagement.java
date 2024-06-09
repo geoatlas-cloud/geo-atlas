@@ -1,11 +1,16 @@
 package org.geoatlas.metadata.persistence.managent;
 
 import org.geoatlas.metadata.context.GeoAtlasMetadataContext;
+import org.geoatlas.metadata.event.DatastoreDeleteEvent;
+import org.geoatlas.metadata.event.FeatureLayerDeleteEvent;
+import org.geoatlas.metadata.event.FeatureLayerUpdateEvent;
+import org.geoatlas.metadata.event.NamespaceDeleteEvent;
 import org.geoatlas.metadata.model.*;
 import org.geoatlas.metadata.persistence.repository.FeatureLayerInfoRepository;
 import org.geoatlas.metadata.response.FeatureLayerInfoResponse;
 import org.geoatlas.metadata.response.PageContent;
 import org.geoatlas.metadata.response.ResponseStatus;
+import org.geoatlas.metadata.util.PyramidRuleExpressionUtils;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.jdbc.JDBCDataStore;
@@ -15,6 +20,10 @@ import org.locationtech.jts.geom.*;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -26,6 +35,7 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -45,17 +55,23 @@ public class FeatureLayerInfoManagement {
 
     private final SpatialReferenceInfoManagement spatialReferenceInfoManagement;
 
+    private final ApplicationEventPublisher eventPublisher;
+
     private final CoordinateReferenceSystem wgs_84;
     private final CoordinateReferenceSystem webMercator;
+
+    private final static Logger log = LoggerFactory.getLogger(FeatureLayerInfoManagement.class);
 
     public FeatureLayerInfoManagement(FeatureLayerInfoRepository repository,
                                       NamespaceInfoManagement namespaceInfoManagement,
                                       DataStoreInfoManagement dataStoreInfoManagement,
-                                      SpatialReferenceInfoManagement spatialReferenceInfoManagement) {
+                                      SpatialReferenceInfoManagement spatialReferenceInfoManagement,
+                                      ApplicationEventPublisher eventPublisher) {
         this.repository = repository;
         this.namespaceInfoManagement = namespaceInfoManagement;
         this.dataStoreInfoManagement = dataStoreInfoManagement;
         this.spatialReferenceInfoManagement = spatialReferenceInfoManagement;
+        this.eventPublisher = eventPublisher;
         try {
             this.wgs_84 = CRS.decode("EPSG:4326", true);
             this.webMercator = CRS.decode("EPSG:3857", true);
@@ -94,8 +110,8 @@ public class FeatureLayerInfoManagement {
             if (namespaceInfo == null){
                 throw new RuntimeException("namespace not found");
             }
-            handleMutations(old.get(), info);
             repository.save(info);
+            handleMutations(old.get(), info, namespaceInfo);
         }else {
             throw new RuntimeException("feature layer not found");
         }
@@ -105,31 +121,53 @@ public class FeatureLayerInfoManagement {
      * 突变内容处理
      * @param last
      * @param current
+     * @param namespace
      */
-    private void handleMutations(FeatureLayerInfo last, FeatureLayerInfo current) {
+    private void handleMutations(FeatureLayerInfo last, FeatureLayerInfo current, NamespaceInfo namespace) {
         if (!last.getName().equals(current.getName())) {
             if (repository.existsByNamespaceIdAndName(current.getNamespaceId(), current.getName())) {
                 throw new RuntimeException("feature layer already exists");
             }
         }
         
-        if (last.getSpatialReferenceId() != current.getSpatialReferenceId()) {
+        if (current.getSpatialReferenceId() != null) {
             // FIXME: 2024/5/25 移除旧的CRS
             cacheCoordinateReferenceSystem(current);
         }
 
         // FIXME: 2024/5/26 build event and push, 可能需要外部系统自行处理缓存等问题
+        if (!Objects.equals(current.getName(), last.getName()) ||
+                !Objects.equals(current.getDatastoreId(), last.getDatastoreId()) ||
+                !Objects.equals(current.getSpatialReferenceId(), last.getSpatialReferenceId()) ||
+                !Objects.equals(current.getView().getSrid(), last.getView().getSrid()) ||
+                !Objects.equals(current.getView().getSql(), last.getView().getSql()) ||
+                !PyramidRuleExpressionUtils.compare(current.getRules(), last.getRules())) {
+            eventPublisher.publishEvent(new FeatureLayerUpdateEvent(last, current, namespace));
+        }
+        GeoAtlasMetadataContext.removeFeatureLayerInfo(namespace.getName(), current.getName());
+        GeoAtlasMetadataContext.addFeatureLayerInfo(namespace.getName(), current);
     }
 
     public void removeFeatureLayerInfo(Long id) {
+        removeFeatureLayerInfo(id, null);
+    }
+
+    private void removeFeatureLayerInfo(Long id, NamespaceInfo namespace) {
         Optional<FeatureLayerInfo> target = repository.findById(id);
         if (target.isPresent()){
+            repository.deleteById(id);
             FeatureLayerInfo featureLayerInfo = target.get();
-            NamespaceInfo namespaceInfo = namespaceInfoManagement.getNamespaceInfo(featureLayerInfo.getNamespaceId());
-            if (namespaceInfo != null) {
-                repository.deleteById(id);
-                GeoAtlasMetadataContext.removeFeatureLayerInfo(namespaceInfo.getName(), featureLayerInfo.getName());
+            if (namespace == null) {
+                namespace = namespaceInfoManagement.getNamespaceInfo(featureLayerInfo.getNamespaceId());
+            }
+            if (namespace != null) {
+                GeoAtlasMetadataContext.removeFeatureLayerInfo(namespace.getName(), featureLayerInfo.getName());
                 // FIXME: 2024/5/25 还应该同步移除Datastore中的virtualView实例
+                eventPublisher.publishEvent(new FeatureLayerDeleteEvent(featureLayerInfo, namespace));
+            }else {
+                if (log.isDebugEnabled()) {
+                    log.debug("namespace not found");
+                }
             }
         }
     }
@@ -182,9 +220,7 @@ public class FeatureLayerInfoManagement {
                     transformedBBox.setMaxy(transform.getMaxY());
                     previewInfo.setBbox(transformedBBox);
                     previewInfo.setCenter(JTS.toGeometry(transform).getCoordinate());
-                } catch (TransformException e) {
-                    throw new RuntimeException(e);
-                } catch (FactoryException e) {
+                } catch (TransformException | FactoryException e) {
                     throw new RuntimeException(e);
                 }
             }
@@ -227,7 +263,7 @@ public class FeatureLayerInfoManagement {
         }
         List<FeatureLayerInfo> content = page.getContent();
         List<FeatureLayerInfoResponse> filled = content.stream()
-                .map(item -> buildFeatureLayerInfoResponse(item))
+                .map(this::buildFeatureLayerInfoResponse)
                 .collect(Collectors.toList());
         return new PageContent<>(filled, page.getNumber(), page.getSize(), page.getTotalElements(), page.getTotalPages());
     }
@@ -289,4 +325,33 @@ public class FeatureLayerInfoManagement {
         }
     }
 
+    @EventListener(value = NamespaceDeleteEvent.class)
+    public void onApplicationEvent(NamespaceDeleteEvent event) {
+        Object source = event.getSource();
+        if (log.isDebugEnabled()) {
+            log.debug("NamespaceDeleteEvent: {}", source);
+        }
+        if (Objects.nonNull(source)) {
+            // 异步清理FeatureLayer
+            NamespaceInfo namespaceInfo = (NamespaceInfo) source;
+            repository.findAllByNamespaceId(namespaceInfo.getId()).forEach(item -> {
+                removeFeatureLayerInfo(item.getId(), namespaceInfo);
+            });
+        }
+    }
+
+    @EventListener(value = DatastoreDeleteEvent.class)
+    public void onApplicationEvent(DatastoreDeleteEvent event) {
+        Object source = event.getSource();
+        if (log.isDebugEnabled()) {
+            log.debug("DatastoreDeleteEvent: {}", source);
+        }
+        if (Objects.nonNull(source)) {
+            // 异步清理FeatureLayer
+            DataStoreInfo dataStoreInfo = (DataStoreInfo) source;
+            repository.findAllByDatastoreId(dataStoreInfo.getId()).forEach(item -> {
+                removeFeatureLayerInfo(item.getId());
+            });
+        }
+    }
 }

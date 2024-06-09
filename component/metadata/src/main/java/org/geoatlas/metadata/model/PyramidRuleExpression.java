@@ -108,11 +108,11 @@ public class PyramidRuleExpression implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         PyramidRuleExpression that = (PyramidRuleExpression) o;
-        return minLevel == that.minLevel && maxLevel == that.maxLevel && Objects.equals(filter, that.filter) && Objects.equals(featureLayerId, that.featureLayerId);
+        return minLevel == that.minLevel && maxLevel == that.maxLevel && Objects.equals(filter, that.filter);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(minLevel, maxLevel, filter, featureLayerId);
+        return Objects.hash(minLevel, maxLevel, filter);
     }
 }
