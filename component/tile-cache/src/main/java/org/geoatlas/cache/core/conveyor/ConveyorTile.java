@@ -110,6 +110,7 @@ public class ConveyorTile extends Conveyor implements TileResponseReceiver {
         stObj =
                 TileObject.createQueryTileObject(
                         layerId, namespace, idx, gridSetId, mimeType.getFormat(), filteringParameters);
+        this.request = new TileRequest(namespace, layerId, gridSetId, idx[0], idx[1], idx[2], mimeType.getFormat());
     }
 
     public TileRequest getRequest() {
