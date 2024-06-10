@@ -148,11 +148,11 @@ public class VirtualViewInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         VirtualViewInfo that = (VirtualViewInfo) o;
-        return geometryType == that.geometryType && srid == that.srid && Objects.equals(name, that.name) && Objects.equals(sql, that.sql) && Objects.equals(pkColumns, that.pkColumns) && Objects.equals(geometryColumn, that.geometryColumn) && Objects.equals(featureLayerId, that.featureLayerId);
+        return geometryType == that.geometryType && srid == that.srid && Objects.equals(name, that.name) && Objects.equals(sql, that.sql) && Objects.equals(pkColumns, that.pkColumns) && Objects.equals(geometryColumn, that.geometryColumn);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, sql, pkColumns, geometryColumn, geometryType, srid, featureLayerId);
+        return Objects.hash(name, sql, pkColumns, geometryColumn, geometryType, srid);
     }
 }

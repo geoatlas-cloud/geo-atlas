@@ -11,6 +11,7 @@ import org.geoatlas.metadata.response.FeatureLayerInfoResponse;
 import org.geoatlas.metadata.response.PageContent;
 import org.geoatlas.metadata.response.ResponseStatus;
 import org.geoatlas.metadata.util.PyramidRuleExpressionUtils;
+import org.geotools.data.DataStore;
 import org.geotools.geometry.jts.JTS;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.jdbc.JDBCDataStore;
@@ -144,6 +145,25 @@ public class FeatureLayerInfoManagement {
                 !PyramidRuleExpressionUtils.compare(current.getRules(), last.getRules())) {
             eventPublisher.publishEvent(new FeatureLayerUpdateEvent(last, current, namespace));
         }
+
+        // 如果view发生变化, 则需要重新创建VirtualTable
+        if (!Objects.equals(current.getView(), last.getView())) {
+            DataStore dataStore = dataStoreInfoManagement.getDataStore(current);
+            if (dataStore == null) {
+                throw new RuntimeException("datastore not found");
+            }
+            JDBCDataStore jdbcDataStore = (JDBCDataStore) dataStore;
+//            if (!jdbcDataStore.getVirtualTables().containsKey(current.getView().getName())) {
+//                jdbcDataStore.getVirtualTables().remove(current.getView().getName());
+//            }
+            VirtualTable virtualTable = getVirtualTable(current);
+            try {
+                jdbcDataStore.createVirtualTable(virtualTable);
+            } catch (IOException exception) {
+                throw new RuntimeException(exception);
+            }
+        }
+
         GeoAtlasMetadataContext.removeFeatureLayerInfo(namespace.getName(), current.getName());
         GeoAtlasMetadataContext.addFeatureLayerInfo(namespace.getName(), current);
     }
