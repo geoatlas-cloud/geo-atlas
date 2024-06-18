@@ -10,6 +10,7 @@ import org.geoatlas.metadata.model.NamespaceInfo;
 import org.geoatlas.ogc.tile.context.FeatureTileMatrixSubsetContext;
 import org.geoatlas.pyramid.index.TileMatrixSet;
 import org.geoatlas.pyramid.index.TileMatrixSubset;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 /**
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Component;
  * @since: 1.0
  **/
 @Component
+@ConditionalOnBean(TileBreeder.class)
 public class SimpleTileSeedService extends AbstractTileSeedService {
 
     private final FeatureTileMatrixSubsetContext subsetContext;

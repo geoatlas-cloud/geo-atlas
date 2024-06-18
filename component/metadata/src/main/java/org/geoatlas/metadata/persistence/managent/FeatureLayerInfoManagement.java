@@ -111,6 +111,9 @@ public class FeatureLayerInfoManagement {
             if (namespaceInfo == null){
                 throw new RuntimeException("namespace not found");
             }
+            // https://stackoverflow.com/questions/73051733/createddate-set-to-null-on-update-spring-data-jdbc
+            // 既然如此, 那就手动设置以下创建时间吧, featureLayer比较复杂, 所以没有使用属性复制的方式(ModelMapper)
+            info.setCreated(old.get().getCreated());
             repository.save(info);
             handleMutations(old.get(), info, namespaceInfo);
         }else {

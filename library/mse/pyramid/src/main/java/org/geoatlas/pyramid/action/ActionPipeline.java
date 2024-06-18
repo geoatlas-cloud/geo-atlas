@@ -157,7 +157,14 @@ public class ActionPipeline {
             if (geometryDescriptor == null) {
                 throw new RuntimeException("GeometryDescriptor is null");
             }
+            // FIXME: 2024/6/18 geometryDescriptor.getType().getCoordinateReferenceSystem() 也可能为NULL, 需要给出应对策略
+            // 1. 抛出异常, 提示可以使用ForceDeclaredCrs?
+            // 2. 使用给定的NativeCRS尝试初始化, 如果失败再转1?
             CoordinateReferenceSystem dataCrs = geometryDescriptor.getType().getCoordinateReferenceSystem();
+            // FIXME: 2024/6/18 暂时先用1, 免得后面报错了不知道咋回事
+            if (dataCrs == null) {
+                throw new RuntimeException("Can not to detect CRS of table " + request.getLayer() + ", try to force declare the coordinate system.");
+            }
             context.setSourceCrs(dataCrs);
         }
         return context;
