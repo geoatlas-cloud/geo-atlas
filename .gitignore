@@ -33,3 +33,9 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+## ENV
+
+.env
+.env.local
+.env.production.local

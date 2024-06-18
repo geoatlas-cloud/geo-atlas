@@ -1,0 +1,78 @@
+version: "3.8"
+services:
+  geospatial-data-source:
+    image: ${REPO}/ga-geospatial-china-bounds:${TAG}
+#    image: ${REPO}/ga-geospatial-osm-china:${TAG}
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "11001:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal_access
+      - external_access
+
+  tiles-api-app:
+    build:
+      context: app/geoatlas-tile-instance
+    image: ${REPO}/ga-tiles-api-app:${TAG}
+    restart: always
+    depends_on:
+      geospatial-data-source:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: 11002
+      SPRING_PROFILES_ACTIVE:
+      POSTGRES_HOST:
+      POSTGRES_PORT:
+      POSTGRES_USERNAME:
+      POSTGRES_SECRET:
+      JASYPT_ENCRYPTOR_PASSWORD:
+      CACHE_ENABLED:
+      INNER_CACHING_ENABLED:
+      INNER_CACHE_EVICTION_POLICY:
+      INNER_CACHE_MEMORY_LIMIT:
+      PERSISTENCE_ENABLED:
+      PERSISTENCE_CACHE_DIR:
+    ports:
+      - "11002:11002"
+    networks:
+      - internal_access
+      - external_access
+
+  dashboard-app:
+    container_name: geo-atlas-dashboard
+    build:
+      context: app/geoatlas-dashboard
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BASE_MAP_TYPE: ${NEXT_PUBLIC_BASE_MAP_TYPE}
+        NEXT_PUBLIC_BASE_MAP_TILE_KEY: ${NEXT_PUBLIC_BASE_MAP_TILE_KEY}
+        NEXT_PUBLIC_WEB_MERCATOR_MAP_ENGINE: ${NEXT_PUBLIC_WEB_MERCATOR_MAP_ENGINE}
+        NEXT_PUBLIC_CGCS2000_MAP_ENGINE: ${NEXT_PUBLIC_CGCS2000_MAP_ENGINE}
+        NEXT_PUBLIC_BACKEND_ENDPOINT: ${NEXT_PUBLIC_BACKEND_ENDPOINT}
+    restart: always
+    depends_on:
+      - geospatial-data-source
+      - tiles-api-app
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://tiles-api-app/health/check || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "3000:3000"
+    networks:
+      - internal_access
+      - external_access
+
+networks:
+  internal_access:
+    internal: true
+  # 外部网络 access
+  external_access:

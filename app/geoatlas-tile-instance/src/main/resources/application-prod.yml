@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/geo_atlas_db_v100
+    username: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_SECRET}
+
+jasypt:
+  encryptor:
+    password: ${JASYPT_ENCRYPTOR_PASSWORD:geo-atlas@fuyi}
+
+geo-atlas:
+  cache:
+    enabled: ${CACHE_ENABLED:true}
+    inner-caching-enabled: ${INNER_CACHING_ENABLED:false}
+    persistence-enabled: ${PERSISTENCE_ENABLED:true} # 默认是file-system
+    inner:
+      storage:
+        eviction-policy: ${INNER_CACHE_EVICTION_POLICY:EXPIRE_AFTER_ACCESS}
+        memory-limit: ${INNER_CACHE_MEMORY_LIMIT:256}
+    persistence:
+      storage:
+        base-directory: ${PERSISTENCE_CACHE_DIR:/tmp/gac}

@@ -1,34 +1,11 @@
 server:
-  port: 2024
+  port: ${SERVER_PORT:11002}
 
 spring:
-  datasource:
-    url: jdbc:postgresql://127.0.0.1:5432/geo_atlas_db_v100
-    username: postgres
-    password: 'gis@4490'
-
-jasypt:
-  encryptor:
-    password: ${JASYPT_ENCRYPTOR_PASSWORD:geo-atlas@fuyi}
-
-geo-atlas:
-  cache:
-    enabled: true
-    inner-caching-enabled: false
-    persistence-enabled: true # 默认是file-system
-    inner:
-      storage:
-        eviction-policy: EXPIRE_AFTER_ACCESS
-        memory-limit: 256
-    persistence:
-      storage:
-        base-directory: /tmp/geo-atlas-cache
+  application:
+    name: tiles-api-backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
 logging:
-  level:
-#    root: TRACE
-    root: INFO
-    org.geoatlas: DEBUG
-    org.geotools.jdbc: DEBUG
-    org.springframework.jdbc.core: DEBUG
   config: classpath:logging.properties

@@ -1,0 +1,10 @@
+Dockerfile
+.dockerignore
+
+README.md
+.idea
+.git
+
+.env
+.env.production.local
+.env.production.local.tempate
