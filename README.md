@@ -59,7 +59,36 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 - Tiles API Service(Backend)
 - Geo Atlas Dashboard(Frontend)
 
-请确保你已经安装好了Docker以及Docker Compose, 我本地使用Windows11 + Docker Desktop(4.30.0)。
+> 请确保你已经安装好了Java, Maven, Docker以及Docker Compose。
+> 我本地使用Windows11 + Docker Desktop(4.30.0) + Apache Maven 3.9.2(使用IDEA 自带的Maven) + Amazon Corretto 1.8.0_412 | Oracle jdk1.8.0_241
+
+1. 克隆代码
+    ```shell
+    git clone git@github.com:geoatlas-cloud/geo-atlas.git
+    ```
+2. 配置环境变量
+    ```shell
+    cp .env.production.local.template .env.production.local
+    ```
+   然后手动修改配置文件, 将其中的配置项修改为你自己的配置，如:
+
+   - HOST_IP
+   - POSTGRES_PASSWORD
+   - JASYPT_ENCRYPTOR_PASSWORD
+   - CACHE_ENABLED
+   - NEXT_PUBLIC_BASE_MAP_TYPE
+   - NEXT_PUBLIC_BASE_MAP_TILE_KEY
+   
+3. 执行构建脚本, 拉起服务
+
+    ```shell
+    ./build2run.sh
+    ```
+等待服务启动完成后访问: http://localhost:11002, 而后按照GeoServer的使用习惯, 逐步创建
+- namespace
+- datastore
+- feature layer
+可通过预览的方式检查瓦片服务是否正常
 
 ## 技术概览
 
@@ -107,11 +136,11 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 
 - Java >= 1.8 JDK
 
-- Maven >= 3.9.2?
+- Maven >= 3.6.3?
 
-- Docker version >= ?
+- Docker version >= 19.03.3?
 
-- docker-compose version >= ?
+- docker-compose version >= 1.26.2?
 
 我不能很好的把握Maven和Docker的版本, 我自己的开发环境如下:
 
@@ -135,7 +164,11 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 
 ### Running
 
-自行用IDEA打开项目，然后运行Application类。
+1. 配置环境变量, 默认使用dev环境(当然，你可以直接修改dev.yml文件, 而不是通过环境变量控制)
+
+   ![开发环境 环境变量配置](./docs/img/tiles-api-app-dev-env-config.png)
+
+2. 自行用IDEA打开项目，然后运行Application类。
 
 ## 支持
 - thread.zhou@gmail.com
@@ -143,7 +176,7 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 
 ## 声明与致谢
 
-- Geo Atlas先版本参照GeoServer构建，并参考了GeoServer的实现方式
+- Geo Atlas现版本参照[GeoServer](https://github.com/geoserver/geoserver)应用模式构建，并参考了[GeoServer](https://github.com/geoserver/geoserver)以及[GeoServer Cloud](https://github.com/geoserver/geoserver-cloud)的实现方式
 - Pyramid、IO(in Library)、Tile Cache模块均来自GeoWebCache, 是对其进行了拆解和少量变更
 - 矢量数据的读取与坐标转换使用GeoTools
 - Mapbox Vector Tile Generator由 [java-vector-tile](https://github.com/ElectronicChartCentre/java-vector-tile) 提供支持
