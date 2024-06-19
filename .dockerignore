@@ -7,4 +7,4 @@ README.md
 
 .env
 .env.production.local
-.env.production.local.tempate
+.env.production.local.template

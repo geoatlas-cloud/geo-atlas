@@ -60,11 +60,11 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 - Geo Atlas Dashboard(Frontend)
 
 > 请确保你已经安装好了Java, Maven, Docker以及Docker Compose。
-> 我本地使用Windows11 + Docker Desktop(4.30.0) + Apache Maven 3.9.2(使用IDEA 自带的Maven) + Amazon Corretto 1.8.0_412 | Oracle jdk1.8.0_241
+> 我测试使用Windows11(Wsl2) + Docker Desktop(4.30.0) + Apache Maven 3.8.7 + Oracle jdk 11.0.20
 
 1. 克隆代码
     ```shell
-    git clone git@github.com:geoatlas-cloud/geo-atlas.git
+    git clone https://github.com/geoatlas-cloud/geo-atlas.git
     ```
 2. 配置环境变量
     ```shell
@@ -154,7 +154,7 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 
 1. 克隆代码
     ```shell
-    git@github.com:geoatlas-cloud/geo-atlas.git
+    git clone https://github.com/geoatlas-cloud/geo-atlas.git
     ```
 2. 要构建应用程序，请从根项目目录运行以下命令, 或者使用IDEA的Maven插件
 
