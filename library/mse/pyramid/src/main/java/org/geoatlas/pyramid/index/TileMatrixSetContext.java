@@ -91,6 +91,21 @@ public class TileMatrixSetContext {
                             + "world in a single 256x256 pixels. The next level represents the whole world in 2x2 tiles "
                             + "of 256x256 pixels and so on in powers of 2. Scale denominator is only accurate near the equator.");
             addTileMatrixSet(WORLD_EPSG_3857);
+
+            projectedName = "EPSG:4550";
+            TileMatrixSet WORLD_EPSG_4550 =
+                    TileMatrixSetFactory.createTileMatrixSet(
+                            projectedName,
+                            CRS.decode("EPSG:4550", true),
+                            BoundingBox.CHINA_4550,
+                            CornerOfOrigin.TOP_LEFT,
+                            TileMatrixSetFactory.DEFAULT_LEVELS,
+                            null,
+                            TileMatrixSetFactory.DEFAULT_PIXEL_SIZE_METER,
+                            256,
+                            256,
+                            false);
+            addTileMatrixSet(WORLD_EPSG_4550);
         } catch (FactoryException e) {
             throw new RuntimeException(e);
         }

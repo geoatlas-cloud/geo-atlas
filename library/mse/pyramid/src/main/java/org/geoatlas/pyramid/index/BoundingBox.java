@@ -39,6 +39,8 @@ public class BoundingBox implements Serializable {
     public static final BoundingBox WORLD4326 = new BoundingBox(-180.0, -90.0, 180.0, 90.0);
     public static final BoundingBox WORLD4490 = new BoundingBox(-180.0, -90.0, 180.0, 90.0);
 
+    public static final BoundingBox CHINA_4550 = new BoundingBox(352748.56930578063, 3122822.417358633, 647251.4306942169, 5937990.422299586);
+
     public static final BoundingBox WORLD3857 =
             new BoundingBox(-20037508.34, -20037508.34, 20037508.34, 20037508.34);
 
