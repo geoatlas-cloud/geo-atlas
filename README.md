@@ -56,15 +56,17 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 以下说明旨在快速搭建一个基于Docker的矢量切片服务示例。
 
 - Geospatial Data Source(With some data)
+  ![境界与政区数据](./docs/img/china_bounds_data_structure.png)
 - Tiles API Service(Backend)
 - Geo Atlas Dashboard(Frontend)
 
 > 请确保你已经安装好了Java, Maven, Docker以及Docker Compose。
-> 我测试使用Windows11(Wsl2) + Docker Desktop(4.30.0) + Apache Maven 3.8.7 + Oracle jdk 11.0.20
+> 我测试使用Wsl2(Windows11) + Docker Desktop(4.30.0) + Apache Maven 3.8.7 + Oracle jdk 11.0.20
 
 1. 克隆代码
     ```shell
-    git clone https://github.com/geoatlas-cloud/geo-atlas.git
+    git clone --recursive https://github.com/geoatlas-cloud/geo-atlas.git
+    cd geo-atlas/
     ```
 2. 配置环境变量
     ```shell
@@ -82,6 +84,7 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 3. 执行构建脚本, 拉起服务
 
     ```shell
+    chmod +x ./build2run.sh
     ./build2run.sh
     ```
 等待服务启动完成后访问: http://localhost:11002, 而后按照GeoServer的使用习惯, 逐步创建
@@ -89,6 +92,16 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 - datastore
 - feature layer
 可通过预览的方式检查瓦片服务是否正常
+
+> 默认给出的数据为我国的境界与政区数据, 来自[省市县数据CTAmap](https://www.shengshixian.com/), 源自[1：100万公众版基础地理信息数据（2021）](https://www.webmap.cn/commres.do?method=result100W)
+> 其实我也曾提取过境界与政区数据([全国1:100万基础地理信息数据-境界与政区提取](https://fuyi-atlas.github.io/posts/program/micro-weather/006/)), 不过与上述数据相比而言比较粗糙, 后由于时间关系没有进行细化, 所以没有使用
+> 
+> 在提供境界与政区数据的同时, 还支持切换为[OSM China](https://hub.docker.com/repository/docker/threadzhou/ga-geospatial-osm-china/general)的数据。 OSM-China数据的处理过程大致为: 将源数据通过Osm2pgsql入库, 而后使用pg_dump制作转储文件, 并基于此转储文件制作PostGIS镜像, 在容器初始化的时候会自动恢复数据。
+> 但是转储后的文件比较大, 导致镜像也比较大, 同时数据比较多导致恢复的时候比较慢。如果将其作为示例中的数据源的话, 那么三个服务全部启动完成耗时估计得有5分钟了, 所以并未将其作为默认得数据源。
+> 
+> 如果你想要使用OSM的数据测试, 可以将其作为额外的数据源进行连接, 这样就不会影响示例应用的初步体验了
+
+### 指南
 
 ## 技术概览
 
@@ -155,6 +168,7 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 1. 克隆代码
     ```shell
     git clone https://github.com/geoatlas-cloud/geo-atlas.git
+    cd geo-atlas/
     ```
 2. 要构建应用程序，请从根项目目录运行以下命令, 或者使用IDEA的Maven插件
 
