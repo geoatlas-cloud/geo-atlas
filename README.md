@@ -37,7 +37,7 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 - [x] 遵循 [OGC Two Dimensional Tile Matrix Set and Tile Set Metadata Standard 2.0](https://docs.ogc.org/is/17-083r4/17-083r4.html) [并不完全遵循]
 - [ ] 尝试遵循 [NEW OGC API](https://ogcapi.ogc.org/#standards)
 - [x] 提供矢量切片能力
-- [x] 支持自定义数据分级规则
+- [x] 支持自定义数据属性分级规则
 - [x] 支持Google瓦片坐标系(原点在左上角, 默认即为Google瓦片坐标系)
 - [x] 支持3857(900913), 4490投影(即默认提供相应的TileMatrixSet)
 - [ ] 支持自定义坐标系及自定义坐标转换行为(源数据坐标系)
@@ -105,6 +105,21 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 > 如果你想要使用OSM的数据测试, 可以将其作为额外的数据源进行连接, 这样就不会影响示例应用的初步体验了
 
 ### 指南
+
+点击图片跳转B站
+
+[![Geo Atlas Quickstart-封面](./docs/img/geo-atlas-cover-pic.png)](https://www.bilibili.com/video/BV1oAgSenEq5/?vd_source=a3d6ac851199bb1b577a99305af58486)
+
+## 截图
+
+![geo-atlas-001](./docs/img/geo-atlas-001.png)
+![geo-atlas-002](./docs/img/geo-atlas-002.png)
+![geo-atlas-cover-pic](./docs/img/geo-atlas-cover-pic.png)
+![geo-atlas-003](./docs/img/geo-atlas-003.png)
+![geo-atlas-004](./docs/img/geo-atlas-004.png)
+![geo-atlas-005](./docs/img/geo-atlas-005.png)
+![geo-atlas-006](./docs/img/geo-atlas-006.png)
+![geo-atlas-007](./docs/img/geo-atlas-007.png)
 
 ## 技术概览
 
