@@ -57,6 +57,9 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 
 - Geospatial Data Source(With some data)
   ![境界与政区数据](./docs/img/china_bounds_data_structure.png)
+  > 💡 <font style="color:red">提供下载的是矢量数据，不是最终地图，与符号化后的地图再可视化表达上存在一定差异。用户利用此数据编制地图，应当严格执行《地图管理条例》有关规定；编制的地图如需向社会公开的，还应当依法履行地图审核程序。</font>
+
+  > <font style="color:yellow"> 💡 数据仅供学习研究使用</font>
 - Tiles API Service(Backend)
 - Geo Atlas Dashboard(Frontend)
 
