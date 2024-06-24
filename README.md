@@ -2,7 +2,9 @@
 
 ## 介绍
 
-Geo Atlas，目前是一个基于Java的开发的用于快速构建矢量切片服务的基础库。
+[Geo Atlas](https://github.com/geoatlas-cloud/geo-atlas)，译为地理地图册(地理地图集)，就像小时候买到的纸质的地理地图册书本，里面填充着各式各样的地图。所以, 我也希望有那么一个东西，同样可以对外提供各种各样的地图以供使用。
+
+目前来说，他还只是一个基于Java的开发的，可用于快速构建矢量切片服务的基础库。
 
 > 本例中基于Geo Atlas实现了一个精简版本的矢量切片服务，从结果来看，可以将其看作为仅实现了矢量切片功能的GeoServer的精简提升版本。
 
@@ -51,15 +53,26 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 - [ ] 提供地形数据切片能力
 - [x] 提供按需快速集成能力(将常用功能封装为各种stater)
 
+## 截图
+
+![geo-atlas-001](./docs/img/geo-atlas-001.png)
+![geo-atlas-002](./docs/img/geo-atlas-002.png)
+![geo-atlas-cover-pic](./docs/img/geo-atlas-cover-pic.png)
+![geo-atlas-003](./docs/img/geo-atlas-003.png)
+![geo-atlas-004](./docs/img/geo-atlas-004.png)
+![geo-atlas-005](./docs/img/geo-atlas-005.png)
+![geo-atlas-006](./docs/img/geo-atlas-006.png)
+![geo-atlas-007](./docs/img/geo-atlas-007.png)
+
 ## 快速开始
 
-以下说明旨在快速搭建一个基于Docker的矢量切片服务示例。
+以下说明旨在基于Docker技术快速搭建一个矢量切片服务示例。
 
 - Geospatial Data Source(With some data)
   ![境界与政区数据](./docs/img/china_bounds_data_structure.png)
   > 💡 <font style="color:red">提供下载的是矢量数据，不是最终地图，与符号化后的地图再可视化表达上存在一定差异。用户利用此数据编制地图，应当严格执行《地图管理条例》有关规定；编制的地图如需向社会公开的，还应当依法履行地图审核程序。</font>
 
-  > <font style="color:yellow"> 💡 数据仅供学习研究使用</font>
+  > 💡 <font style="color:orange"> 数据仅供学习研究使用</font>
 - Tiles API Service(Backend)
 - Geo Atlas Dashboard(Frontend)
 
@@ -77,12 +90,12 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
     ```
    然后手动修改配置文件, 将其中的配置项修改为你自己的配置，如:
 
-   - HOST_IP
-   - POSTGRES_PASSWORD
-   - JASYPT_ENCRYPTOR_PASSWORD
-   - CACHE_ENABLED
-   - NEXT_PUBLIC_BASE_MAP_TYPE
-   - NEXT_PUBLIC_BASE_MAP_TILE_KEY
+   - HOST_IP：宿主机IP
+   - POSTGRES_PASSWORD：PostgreSQL数据库初始化密码
+   - JASYPT_ENCRYPTOR_PASSWORD：用于加密数据库账户信息的密钥
+   - CACHE_ENABLED：是否开启缓存
+   - NEXT_PUBLIC_BASE_MAP_TYPE：地图类型, osm|tianditu
+   - NEXT_PUBLIC_BASE_MAP_TILE_KEY：当使用天地图时需要填写key，4490经纬度投影默认使用天地图，如果需要进行4490经纬度投影预览还请填写天地图Key
    
 3. 执行构建脚本, 拉起服务
 
@@ -90,7 +103,7 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
     chmod +x ./build2run.sh
     ./build2run.sh
     ```
-等待服务启动完成后访问: http://localhost:11002, 而后按照GeoServer的使用习惯, 逐步创建
+等待服务启动完成后访问: http://localhost:11003, 而后按照GeoServer的使用习惯, 逐步创建
 - namespace
 - datastore
 - feature layer
@@ -109,17 +122,6 @@ ps: 当然，还有当下信创的背景原因。就当，抛砖引玉了😧，
 点击图片跳转B站
 
 [![Geo Atlas Quickstart-封面](./docs/img/geo-atlas-cover-pic.png)](https://www.bilibili.com/video/BV1oAgSenEq5/?vd_source=a3d6ac851199bb1b577a99305af58486)
-
-## 截图
-
-![geo-atlas-001](./docs/img/geo-atlas-001.png)
-![geo-atlas-002](./docs/img/geo-atlas-002.png)
-![geo-atlas-cover-pic](./docs/img/geo-atlas-cover-pic.png)
-![geo-atlas-003](./docs/img/geo-atlas-003.png)
-![geo-atlas-004](./docs/img/geo-atlas-004.png)
-![geo-atlas-005](./docs/img/geo-atlas-005.png)
-![geo-atlas-006](./docs/img/geo-atlas-006.png)
-![geo-atlas-007](./docs/img/geo-atlas-007.png)
 
 ## 技术概览
 
