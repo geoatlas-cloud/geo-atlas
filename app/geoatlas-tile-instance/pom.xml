@@ -55,6 +55,11 @@
             <artifactId>mssql-jdbc</artifactId>
             <version>${mssql-jdbc.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.geotools.jdbc</groupId>
+            <artifactId>gt-jdbc-mysql</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

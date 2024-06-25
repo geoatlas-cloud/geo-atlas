@@ -15,12 +15,13 @@ public class GeoToolsDataStoreCase {
 
     public static void main(String[] args) {
         DataStoreInfo dataStoreInfo = new DataStoreInfo();
-        dataStoreInfo.setType("postgis");
-        dataStoreInfo.setHost("localhost");
-        dataStoreInfo.setPort("5432");
-        dataStoreInfo.setSchema("public");
-        dataStoreInfo.setDatabase("wukong");
-        dataStoreInfo.setUser("postgres");
+//        dataStoreInfo.setType("postgis");
+        dataStoreInfo.setType("mysql");
+        dataStoreInfo.setHost("192.168.1.5");
+        dataStoreInfo.setPort("3301");
+        dataStoreInfo.setSchema("");
+        dataStoreInfo.setDatabase("mysql");
+        dataStoreInfo.setUser("root");
         dataStoreInfo.setPassword("gis@4490");
         try {
             DataStore dataStore = DataStoreFactory.createDataStore(dataStoreInfo);

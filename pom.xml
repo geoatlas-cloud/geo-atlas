@@ -179,6 +179,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.geotools.jdbc</groupId>
+                <artifactId>gt-jdbc-mysql</artifactId>
+                <version>${geotools.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.geotools</groupId>
                 <artifactId>gt-geojson</artifactId>
                 <version>${geotools.version}</version>
