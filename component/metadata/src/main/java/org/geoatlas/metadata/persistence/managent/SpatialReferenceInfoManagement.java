@@ -1,14 +1,12 @@
 package org.geoatlas.metadata.persistence.managent;
 
 import org.geoatlas.metadata.context.GeoAtlasMetadataContext;
-import org.geoatlas.metadata.model.FeatureLayerInfo;
 import org.geoatlas.metadata.model.SpatialReferenceInfo;
 import org.geoatlas.metadata.persistence.repository.SpatialReferenceInfoRepository;
 import org.geoatlas.metadata.response.PageContent;
 import org.geotools.referencing.CRS;
 import org.opengis.referencing.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +29,7 @@ public class SpatialReferenceInfoManagement {
     public long getTotalCount() {
         return this.repository.count();
     }
-    public CoordinateReferenceSystem getCoordinateReferenceSystem(Long spatialReferenceId) {
+    public synchronized CoordinateReferenceSystem getCoordinateReferenceSystem(Long spatialReferenceId) {
         CoordinateReferenceSystem coordinateReferenceSystem = null;
         if (spatialReferenceId != null) {
             coordinateReferenceSystem = GeoAtlasMetadataContext.getCoordinateReferenceSystem(spatialReferenceId);
@@ -39,17 +37,25 @@ public class SpatialReferenceInfoManagement {
                 Optional<SpatialReferenceInfo> target = this.repository.findById(spatialReferenceId);
                 if (target.isPresent()) {
                     try {
-//                        coordinateReferenceSystem = CRS.parseWKT(target.get().getWktText());
+
                         coordinateReferenceSystem = CRS.decode(target.get().getCode(), true);
-                        GeoAtlasMetadataContext.addCoordinateReferenceSystem(spatialReferenceId, coordinateReferenceSystem);
                     } catch (FactoryException e) {
-                        throw new RuntimeException(e);
+                        try {
+                            // FIXME: 2024/6/28 目前此种方式是为兼容从数据库获取坐标系定义的方式，但是当心此种方式无法定义轴顺序以及与GeoTools默认初始化坐标系方法存在偏差
+                            // FIXME: 2024/6/28 所以可以选择如org.geotools.referencing.factory.epsg.FactoryUsingWKT的方式进行拓展
+                            // FIXME: 2024/6/28 或者，全部变更为使用配置文件的方式（目前改项目定位是类库），后续估计会倾向于此种方式进行改造。如果是做平台型的定位，那么会全部变更到数据库中进行处理
+                            // 尝试使用wkt进行定义
+                            coordinateReferenceSystem = CRS.parseWKT(target.get().getWktText());
+                        }catch (FactoryException ex) {
+                            throw new RuntimeException(ex);
+                        }
                     }
                 }
             }
             if (coordinateReferenceSystem == null) {
                 throw new RuntimeException("CoordinateReferenceSystem not found");
             }
+            GeoAtlasMetadataContext.addCoordinateReferenceSystem(spatialReferenceId, coordinateReferenceSystem);
         }
         return coordinateReferenceSystem;
     }
