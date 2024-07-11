@@ -100,17 +100,14 @@ public class TileMatrixSet implements Description{
     }
 
     protected long[] closestIndex(BoundingBox tileBounds) throws MatrixMismatchException {
+        double wRes = tileBounds.getWidth() / getMatrix(0).getTileWidth();
+
         double bestError = Double.MAX_VALUE;
         int bestLevel = -1;
         double bestResolution = -1.0;
 
         for (int i = 0; i < getNumLevels(); i++) {
             TileMatrix grid = getMatrix(i);
-//            double wRes = tileBounds.getWidth() / getTileWidth();
-            double wRes = tileBounds.getWidth() / grid.getTileWidth();
-            if (Math.abs(wRes - bestResolution) > (0.1 * wRes)) {
-                throw new ResolutionMismatchException(wRes, bestResolution);
-            }
 
             double error = Math.abs(wRes - grid.getResolution());
 
@@ -121,6 +118,10 @@ public class TileMatrixSet implements Description{
             } else {
                 break;
             }
+        }
+
+        if (Math.abs(wRes - bestResolution) > (0.1 * wRes)) {
+            throw new ResolutionMismatchException(wRes, bestResolution);
         }
 
         return closestIndex(bestLevel, tileBounds);
