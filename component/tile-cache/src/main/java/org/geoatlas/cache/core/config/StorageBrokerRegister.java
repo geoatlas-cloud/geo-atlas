@@ -81,7 +81,7 @@ public class StorageBrokerRegister implements EnvironmentAware, ImportBeanDefini
             try {
                 blobStoreInfo.setBaseDirectory(getBaseDirectory());
                 blobStoreInfo.setPathGeneratorType(FileBlobStoreInfo.PathGeneratorType.valueOf(getApplicationValue(GeoAtlasCacheEnvKeys.getPathGeneratorType(), String.class, FileBlobStoreInfo.PathGeneratorType.DEFAULT.name())));
-                blobStoreInfo.setFileSystemBlockSize(getApplicationValue(GeoAtlasCacheEnvKeys.getFileSystemBlockSize(), Integer.class, 1024));
+                blobStoreInfo.setFileSystemBlockSize(getApplicationValue(GeoAtlasCacheEnvKeys.getFileSystemBlockSize(), Integer.class, 4096));
                 blobStoreInfo.setName(getApplicationValue(GeoAtlasCacheEnvKeys.getPersistenceProvider(), String.class, FILE_SYSTEM_PROVIDER));
                 return blobStoreInfo.createInstance(null);
             }catch (Exception e) {
