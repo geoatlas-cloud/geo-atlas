@@ -1,6 +1,6 @@
 # Geo Atlas
 
-<video src="./docs/video/geo-atlas-demo.mp4" controls="controls" width="100%" height=""></video>
+<video src="./docs/video/geo-atlas-preview.mp4" controls="controls" width="100%" height=""></video>
 
 ## 介绍
 
