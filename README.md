@@ -1,7 +1,5 @@
 # Geo Atlas
 
-<video src="./docs/video/geo-atlas-demo.mp4" controls="controls" width="100%" height=""></video>
-
 ## 介绍
 
 [Geo Atlas](https://github.com/geoatlas-cloud/geo-atlas)，译为地理地图册(地理地图集)，就像小时候买到的纸质的地理地图册书本，里面填充着各式各样的地图。所以, 我也希望有那么一个东西，同样可以对外提供各种各样的地图以供使用。
