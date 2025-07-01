@@ -25,7 +25,7 @@ import org.geoatlas.cache.core.locks.LockProvider;
 import org.geoatlas.tile.TileObject;
 import org.geotools.util.logging.Logging;
 
-import javax.annotation.Nullable;
+import jakarta.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;

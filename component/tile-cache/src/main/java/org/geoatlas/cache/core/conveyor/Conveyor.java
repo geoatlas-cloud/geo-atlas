@@ -14,11 +14,11 @@
  */
 package org.geoatlas.cache.core.conveyor;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.geoatlas.cache.core.mime.MimeType;
 import org.geoatlas.cache.core.storage.StorageBroker;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * Represents a request against a tile service and carries the information needed to complete it.

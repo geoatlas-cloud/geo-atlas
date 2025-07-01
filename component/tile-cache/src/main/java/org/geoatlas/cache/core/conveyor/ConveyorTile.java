@@ -14,6 +14,8 @@
  */
 package org.geoatlas.cache.core.conveyor;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.geoatlas.cache.core.GeoAtlasCacheException;
 import org.geoatlas.cache.core.mime.MimeType;
 import org.geoatlas.cache.core.response.TileResponseReceiver;
@@ -26,8 +28,6 @@ import org.geoatlas.tile.TileRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 import java.util.Objects;
 

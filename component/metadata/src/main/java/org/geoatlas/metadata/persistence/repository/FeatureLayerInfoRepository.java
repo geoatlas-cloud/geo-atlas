@@ -3,6 +3,7 @@ package org.geoatlas.metadata.persistence.repository;
 import org.geoatlas.metadata.model.FeatureLayerInfo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.List;
  * @time: 2024/4/27 20:58
  * @since: 1.0
  **/
-public interface FeatureLayerInfoRepository extends PagingAndSortingRepository<FeatureLayerInfo, Long> {
+public interface FeatureLayerInfoRepository extends CrudRepository<FeatureLayerInfo, Long>, PagingAndSortingRepository<FeatureLayerInfo, Long> {
 
     FeatureLayerInfo findFirstByNamespaceIdAndName(Long namespaceId, String name);
 

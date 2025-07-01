@@ -8,10 +8,13 @@ import org.geoatlas.cache.core.service.TileSeedService;
 import org.geoatlas.cache.core.source.DefaultTileSource;
 import org.geoatlas.cache.core.source.TileSource;
 import org.geoatlas.cache.core.storage.StorageBroker;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+
+import java.util.concurrent.ExecutorService;
 
 /**
  * @author: <a href="mailto:thread.zhou@gmail.com">Fuyi</a>
@@ -48,7 +51,7 @@ public class GeoAtlasCacheAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(value = TileSeedEndpoint.class)
-    public TileSeedEndpoint tileSeedEndpoint(TileSeedService tileSeedService) {
-        return new TileSeedEndpoint(tileSeedService);
+    public TileSeedEndpoint tileSeedEndpoint(TileSeedService tileSeedService, @Qualifier("cacheOperationExecutor") ExecutorService cacheOperationExecutor) {
+        return new TileSeedEndpoint(tileSeedService, cacheOperationExecutor);
     }
 }

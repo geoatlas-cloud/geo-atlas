@@ -1,5 +1,7 @@
 package org.geoatlas.ogc.tile.dispatcher;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.geoatlas.cache.core.GeoAtlasCacheException;
 import org.geoatlas.cache.core.conveyor.ConveyorTile;
 import org.geoatlas.cache.core.mime.MimeException;
@@ -17,8 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 
 /**
